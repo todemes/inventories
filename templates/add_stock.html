@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Add New Uniform Type</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Uniform Type</label>
+                        <input type="text" class="form-control" id="type" name="type" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="size" class="form-label">Size</label>
+                        <input type="text" class="form-control" id="size" name="size" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <input type="text" class="form-control" id="color" name="color" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="initial_stock" class="form-label">Initial Stock</label>
+                        <input type="number" class="form-control" id="initial_stock" name="initial_stock" required min="0">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Add Uniform</button>
+                        <a href="/stock" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

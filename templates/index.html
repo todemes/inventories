@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Stock Management</h5>
+                <p class="card-text">Manage uniform inventory and track stock levels.</p>
+                <a href="/stock" class="btn btn-primary">View Stock</a>
+                <a href="/stock/add" class="btn btn-success">Add New Uniform</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Staff Management</h5>
+                <p class="card-text">Manage staff members and their uniform assignments.</p>
+                <a href="/staff" class="btn btn-primary">View Staff</a>
+                <a href="/staff/add" class="btn btn-success">Add New Staff</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Assignments</h5>
+                <p class="card-text">Track uniform assignments and returns.</p>
+                <a href="/assignments" class="btn btn-primary">View Assignments</a>
+                <a href="/assignments/add" class="btn btn-success">New Assignment</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

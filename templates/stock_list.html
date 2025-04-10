@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Uniform Stock</h2>
+    <a href="{{ url_for('add_uniform') }}" class="btn btn-primary mb-3">Add New Uniform</a>
+    
+    <!-- Polo - Male Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Polo - Male</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            {% set colors = ['Black', 'White', 'Navy'] %}
+                            
+                            {% for size in sizes %}
+                                {% for color in colors %}
+                                    {% for uniform in uniforms %}
+                                        {% if uniform.type == 'Polo - Male' and uniform.size == size and uniform.color == color %}
+                                        <tr>
+                                            <td>{{ uniform.type }}</td>
+                                            <td>{{ uniform.size }}</td>
+                                            <td>{{ uniform.color }}</td>
+                                            <td>{{ uniform.current_stock }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                    Update Stock
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Update Stock Modal -->
+                                        <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="quantity" class="form-label">Quantity Change</label>
+                                                                <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                                <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="movement_type" class="form-label">Movement Type</label>
+                                                                <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                    <option value="addition">Addition</option>
+                                                                    <option value="reduction">Reduction</option>
+                                                                    <option value="adjustment">Adjustment</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="notes" class="form-label">Notes</label>
+                                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Update</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Polo - Female Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Polo - Female</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            {% set colors = ['Black', 'White', 'Navy'] %}
+                            
+                            {% for size in sizes %}
+                                {% for color in colors %}
+                                    {% for uniform in uniforms %}
+                                        {% if uniform.type == 'Polo - Female' and uniform.size == size and uniform.color == color %}
+                                        <tr>
+                                            <td>{{ uniform.type }}</td>
+                                            <td>{{ uniform.size }}</td>
+                                            <td>{{ uniform.color }}</td>
+                                            <td>{{ uniform.current_stock }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                    Update Stock
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Update Stock Modal -->
+                                        <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="quantity" class="form-label">Quantity Change</label>
+                                                                <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                                <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="movement_type" class="form-label">Movement Type</label>
+                                                                <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                    <option value="addition">Addition</option>
+                                                                    <option value="reduction">Reduction</option>
+                                                                    <option value="adjustment">Adjustment</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="notes" class="form-label">Notes</label>
+                                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Update</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Short Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Shorts</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            {% set colors = ['Black', 'Navy'] %}
+                            
+                            {% for size in sizes %}
+                                {% for color in colors %}
+                                    {% for uniform in uniforms %}
+                                        {% if uniform.type == 'Short' and uniform.size == size and uniform.color == color %}
+                                        <tr>
+                                            <td>{{ uniform.type }}</td>
+                                            <td>{{ uniform.size }}</td>
+                                            <td>{{ uniform.color }}</td>
+                                            <td>{{ uniform.current_stock }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                    Update Stock
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Update Stock Modal -->
+                                        <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="quantity" class="form-label">Quantity Change</label>
+                                                                <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                                <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="movement_type" class="form-label">Movement Type</label>
+                                                                <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                    <option value="addition">Addition</option>
+                                                                    <option value="reduction">Reduction</option>
+                                                                    <option value="adjustment">Adjustment</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="notes" class="form-label">Notes</label>
+                                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Update</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cap Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Caps</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set colors = ['Black', 'Navy'] %}
+                            
+                            {% for color in colors %}
+                                {% for uniform in uniforms %}
+                                    {% if uniform.type == 'Cap' and uniform.color == color %}
+                                    <tr>
+                                        <td>{{ uniform.type }}</td>
+                                        <td>{{ uniform.size }}</td>
+                                        <td>{{ uniform.color }}</td>
+                                        <td>{{ uniform.current_stock }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                Update Stock
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Update Stock Modal -->
+                                    <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="quantity" class="form-label">Quantity Change</label>
+                                                            <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                            <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="movement_type" class="form-label">Movement Type</label>
+                                                            <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                <option value="addition">Addition</option>
+                                                                <option value="reduction">Reduction</option>
+                                                                <option value="adjustment">Adjustment</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="notes" class="form-label">Notes</label>
+                                                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Update</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shirt Linen Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Linen Shirts</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            {% set colors = ['White'] %}
+                            
+                            {% for size in sizes %}
+                                {% for color in colors %}
+                                    {% for uniform in uniforms %}
+                                        {% if uniform.type == 'Shirt Linen' and uniform.size == size and uniform.color == color %}
+                                        <tr>
+                                            <td>{{ uniform.type }}</td>
+                                            <td>{{ uniform.size }}</td>
+                                            <td>{{ uniform.color }}</td>
+                                            <td>{{ uniform.current_stock }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                    Update Stock
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Update Stock Modal -->
+                                        <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="quantity" class="form-label">Quantity Change</label>
+                                                                <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                                <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="movement_type" class="form-label">Movement Type</label>
+                                                                <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                    <option value="addition">Addition</option>
+                                                                    <option value="reduction">Reduction</option>
+                                                                    <option value="adjustment">Adjustment</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="notes" class="form-label">Notes</label>
+                                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Update</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rashguard Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Rashguards</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] %}
+                            {% set colors = ['Black', 'Navy'] %}
+                            
+                            {% for size in sizes %}
+                                {% for color in colors %}
+                                    {% for uniform in uniforms %}
+                                        {% if uniform.type == 'Rashguard' and uniform.size == size and uniform.color == color %}
+                                        <tr>
+                                            <td>{{ uniform.type }}</td>
+                                            <td>{{ uniform.size }}</td>
+                                            <td>{{ uniform.color }}</td>
+                                            <td>{{ uniform.current_stock }}</td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                    Update Stock
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- Update Stock Modal -->
+                                        <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label for="quantity" class="form-label">Quantity Change</label>
+                                                                <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                                <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="movement_type" class="form-label">Movement Type</label>
+                                                                <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                    <option value="addition">Addition</option>
+                                                                    <option value="reduction">Reduction</option>
+                                                                    <option value="adjustment">Adjustment</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label for="notes" class="form-label">Notes</label>
+                                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Update</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Raincoat Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Raincoats</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set colors = ['Black', 'Navy'] %}
+                            
+                            {% for color in colors %}
+                                {% for uniform in uniforms %}
+                                    {% if uniform.type == 'Raincoat' and uniform.color == color %}
+                                    <tr>
+                                        <td>{{ uniform.type }}</td>
+                                        <td>{{ uniform.size }}</td>
+                                        <td>{{ uniform.color }}</td>
+                                        <td>{{ uniform.current_stock }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ uniform.id }}">
+                                                Update Stock
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Update Stock Modal -->
+                                    <div class="modal fade" id="updateModal{{ uniform.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ uniform.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="updateModalLabel{{ uniform.id }}">Update Stock - {{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }})</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('update_stock', uniform_id=uniform.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="quantity" class="form-label">Quantity Change</label>
+                                                            <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                            <small class="text-muted">Use positive numbers for additions, negative for reductions</small>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="movement_type" class="form-label">Movement Type</label>
+                                                            <select class="form-select" id="movement_type" name="movement_type" required>
+                                                                <option value="addition">Addition</option>
+                                                                <option value="reduction">Reduction</option>
+                                                                <option value="adjustment">Adjustment</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="notes" class="form-label">Notes</label>
+                                                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Update</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

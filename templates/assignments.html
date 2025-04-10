@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Uniform Assignments</h2>
+    <a href="/assignments/add" class="btn btn-success">New Assignment</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Assignment ID</th>
+                <th>Staff Name</th>
+                <th>Employee ID</th>
+                <th>Uniform</th>
+                <th>Assigned Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assignment in assignments %}
+            <tr>
+                <td>{{ assignment[0] }}</td>
+                <td>{{ assignment[1] }}</td>
+                <td>{{ assignment[3] }}</td>
+                <td>{{ assignment[4] }} {{ assignment[5] }} {{ assignment[6] }}</td>
+                <td>{{ assignment[7] }}</td>
+                <td>{{ assignment[9] }}</td>
+                <td>
+                    {% if assignment[9] == 'assigned' %}
+                    <a href="/assignments/return?id={{ assignment[0] }}" class="btn btn-warning btn-sm">Return</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

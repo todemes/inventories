@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Assign Uniform</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="staff_id" class="form-label">Staff Member</label>
+                        <select class="form-select" id="staff_id" name="staff_id" required>
+                            <option value="">Select Staff Member</option>
+                            {% for member in staff %}
+                            <option value="{{ member[0] }}">{{ member[1] }} ({{ member[3] }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="uniform_id" class="form-label">Uniform</label>
+                        <select class="form-select" id="uniform_id" name="uniform_id" required>
+                            <option value="">Select Uniform</option>
+                            {% for uniform in uniforms %}
+                            <option value="{{ uniform[0] }}">{{ uniform[1] }} - {{ uniform[2] }} {{ uniform[3] }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Assign Uniform</button>
+                        <a href="/assignments" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

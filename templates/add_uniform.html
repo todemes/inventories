@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add New Uniform</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="type" class="form-label">Uniform Type</label>
+            <select class="form-select" id="type" name="type" required onchange="updateColorOptions()">
+                <option value="">Select Uniform Type</option>
+                <option value="Polo - Female">Polo - Female</option>
+                <option value="Polo - Male">Polo - Male</option>
+                <option value="Shirt Linen">Shirt Linen</option>
+                <option value="Rashguard">Rashguard</option>
+                <option value="Short">Short</option>
+                <option value="Cap">Cap</option>
+                <option value="Raincoat">Raincoat</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="color" class="form-label">Color</label>
+            <select class="form-select" id="color" name="color" required>
+                <option value="">Select Color</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+        <div class="mb-3" id="sizeContainer">
+            <label for="size" class="form-label">Size</label>
+            <select class="form-select" id="size" name="size" required>
+                <option value="">Select Size</option>
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+                <option value="XXL">XXL</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="initial_stock" class="form-label">Initial Stock</label>
+            <input type="number" class="form-control" id="initial_stock" name="initial_stock" value="0" required>
+        </div>
+        <div class="mb-3">
+            <label for="reorder_level" class="form-label">Reorder Level</label>
+            <input type="number" class="form-control" id="reorder_level" name="reorder_level" value="5" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Uniform</button>
+        <a href="{{ url_for('stock_list') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // Define color options for each uniform type
+    const colorOptions = {
+        'Polo - Female': ['Navy', 'Blue', 'Black', 'White'],
+        'Polo - Male': ['Navy', 'Blue', 'Black', 'White'],
+        'Shirt Linen': ['White', 'Navy', 'Maldivian'],
+        'Rashguard': ['Navy'],
+        'Short': ['Navy'],
+        'Cap': ['Navy', 'White'],
+        'Raincoat': ['Navy']
+    };
+
+    // Define which uniform types don't have sizes
+    const noSizeTypes = ['Cap', 'Raincoat'];
+
+    // Function to update color options based on selected uniform type
+    function updateColorOptions() {
+        const typeSelect = document.getElementById('type');
+        const colorSelect = document.getElementById('color');
+        const sizeContainer = document.getElementById('sizeContainer');
+        const sizeSelect = document.getElementById('size');
+        
+        // Clear existing options
+        colorSelect.innerHTML = '<option value="">Select Color</option>';
+        
+        // Get selected type
+        const selectedType = typeSelect.value;
+        
+        // Add color options based on selected type
+        if (selectedType && colorOptions[selectedType]) {
+            colorOptions[selectedType].forEach(color => {
+                const option = document.createElement('option');
+                option.value = color;
+                option.textContent = color;
+                colorSelect.appendChild(option);
+            });
+        }
+        
+        // Show/hide size field based on uniform type
+        if (noSizeTypes.includes(selectedType)) {
+            sizeContainer.style.display = 'none';
+            sizeSelect.value = 'No size';
+        } else {
+            sizeContainer.style.display = 'block';
+        }
+    }
+
+    // Initialize color options on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateColorOptions();
+    });
+</script>
+{% endblock %} 

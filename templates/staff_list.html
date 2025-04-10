@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Staff Members</h2>
+    <div class="d-flex justify-content-between mb-3">
+        <input type="text" id="staffSearch" class="form-control" placeholder="Search Staff..." onfocus="clearAndShowDropdown()" onblur="hideDropdown()" onkeyup="filterStaff()" style="max-width: 300px;">
+        <a href="{{ url_for('add_staff') }}" class="btn btn-primary ms-2">Add New Staff Member</a>
+    </div>
+    
+    <ul id="staffList" class="list-group mt-2 mb-3" style="max-height: 200px; overflow-y: auto; display: none; width: 300px;">
+        <li class="list-group-item" onclick="showAllStaff()" style="background-color: #e2e2e2; cursor: pointer;">See All Staff</li>
+        {% for staff_member in staff %}
+        <li class="list-group-item" onclick="selectStaff('{{ staff_member.id }}')" style="cursor: pointer;" onmouseover="this.style.fontWeight='bold'; this.style.backgroundColor='#e2e2e2'" onmouseout="this.style.fontWeight='normal'; this.style.backgroundColor=''">{{ staff_member.name }}</li>
+        {% endfor %}
+    </ul>
+    
+    <div class="row" id="staffContainer">
+        {% for staff_member in staff %}
+        <div class="col-md-6 mb-4 staff-card" data-staff-id="{{ staff_member.id }}">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ staff_member.name }} - {{ staff_member.department|title }}</h5>
+                    <div class="d-flex align-items-center" style="gap: 1rem;">
+                        <a href="{{ url_for('assign_uniform') }}?staff_id={{ staff_member.id }}" class="text-decoration-none" style="color: #bcab82;" onmouseover="this.style.color='black'" onmouseout="this.style.color='#bcab82'">Assign Uniform</a>
+                        <a href="{{ url_for('edit_staff', staff_id=staff_member.id) }}" class="text-decoration-none" style="color: #bcab82;" onmouseover="this.style.color='black'" onmouseout="this.style.color='#bcab82'">Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ staff_member.id }}">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if staff_member.assigned_uniforms %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Size</th>
+                                        <th>Color</th>
+                                        <th>Assigned Date</th>
+                                        <th>Notes</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for uniform in staff_member.assigned_uniforms %}
+                                    <tr>
+                                        <td>{{ uniform.type }}</td>
+                                        <td>{{ uniform.size }}</td>
+                                        <td>{{ uniform.color }}</td>
+                                        <td>{{ uniform.assigned_date.split(' ')[0] }}</td>
+                                        <td>{{ uniform.notes }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#returnModal{{ staff_member.id }}_{{ loop.index }}">
+                                                Return
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Return Uniform Modal -->
+                                    <div class="modal fade" id="returnModal{{ staff_member.id }}_{{ loop.index }}" tabindex="-1" aria-labelledby="returnModalLabel{{ staff_member.id }}_{{ loop.index }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="returnModalLabel{{ staff_member.id }}_{{ loop.index }}">Return Uniform</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('return_uniform', assignment_id=staff_member.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <p>Are you sure you want to return the following uniform?</p>
+                                                        <ul>
+                                                            <li><strong>Type:</strong> {{ uniform.type }}</li>
+                                                            <li><strong>Size:</strong> {{ uniform.size }}</li>
+                                                            <li><strong>Color:</strong> {{ uniform.color }}</li>
+                                                        </ul>
+                                                        <div class="mb-3">
+                                                            <label for="notes" class="form-label">Notes</label>
+                                                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" id="discard" name="discard" value="1">
+                                                            <label class="form-check-label" for="discard">
+                                                                Discard (do not return to stock)
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-primary">Return</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No uniforms assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Modal -->
+        <div class="modal fade" id="deleteModal{{ staff_member.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ staff_member.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel{{ staff_member.id }}">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete {{ staff_member.name }}?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form action="{{ url_for('delete_staff', staff_id=staff_member.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function showDropdown() {
+    document.getElementById('staffList').style.display = 'block';
+}
+
+function hideDropdown() {
+    setTimeout(() => {
+        document.getElementById('staffList').style.display = 'none';
+    }, 200);
+}
+
+function filterStaff() {
+    const input = document.getElementById('staffSearch');
+    const filter = input.value.toLowerCase();
+    const ul = document.getElementById('staffList');
+    const li = ul.getElementsByTagName('li');
+    for (let i = 0; i < li.length; i++) {
+        const txtValue = li[i].textContent || li[i].innerText;
+        li[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? '' : 'none';
+    }
+}
+
+function selectStaff(staffId) {
+    const cards = document.getElementsByClassName('staff-card');
+    for (let i = 0; i < cards.length; i++) {
+        cards[i].style.display = cards[i].getAttribute('data-staff-id') === staffId ? 'block' : 'none';
+    }
+}
+
+function showAllStaff() {
+    const cards = document.getElementsByClassName('staff-card');
+    for (let i = 0; i < cards.length; i++) {
+        cards[i].style.display = 'block';
+    }
+}
+
+function clearAndShowDropdown() {
+    const input = document.getElementById('staffSearch');
+    input.value = '';
+    showDropdown();
+}
+</script>
+{% endblock %} 

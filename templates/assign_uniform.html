@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Assign Uniform</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="staff_id" class="form-label">Staff Member</label>
+            <select class="form-select" id="staff_id" name="staff_id" required>
+                <option value="">Select Staff Member</option>
+                {% for staff_member in staff %}
+                <option value="{{ staff_member.id }}" {% if request.args.get('staff_id')|int == staff_member.id %}selected{% endif %}>{{ staff_member.name }} - {{ staff_member.department|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="uniform_id" class="form-label">Uniform</label>
+            <select class="form-select" id="uniform_id" name="uniform_id" required>
+                <option value="">Select Uniform</option>
+                {% for uniform in uniforms %}
+                <option value="{{ uniform.id }}">{{ uniform.type }} ({{ uniform.size }}, {{ uniform.color }}) - Stock: {{ uniform.current_stock }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="notes" class="form-label">Notes</label>
+            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Assign Uniform</button>
+        <a href="{{ url_for('staff_list') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 
