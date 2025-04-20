@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management - Uniform Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <style>
+        .table td {
+            font-size: 14px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Uniform Inventory</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Stock</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="staff.html">Staff</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="history.html">History</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Stock Management</h2>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-stock-action" id="addNewUniformBtn">
+                    <i class="bi bi-plus-lg"></i> Add New Uniform
+                </button>
+                <button class="btn btn-stock-action" id="exportCsvBtn">
+                    <i class="bi bi-download"></i> Export to CSV
+                </button>
+            </div>
+        </div>
+
+        <div id="stockList">
+            <!-- Stock list will be dynamically populated here -->
+        </div>
+    </div>
+
+    <!-- Add Uniform Modal -->
+    <div class="modal fade" id="addUniformModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Uniform</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUniformForm">
+                        <div class="mb-3">
+                            <label for="uniformType" class="form-label">Uniform Type</label>
+                            <input type="text" class="form-control" id="uniformType" name="type" required placeholder="Enter uniform type">
+                        </div>
+                        <div class="mb-3">
+                            <label for="size" class="form-label">Size</label>
+                            <select class="form-select" id="size" name="size" required>
+                                <option value="">Select Size</option>
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                                <option value="XXL">XXL</option>
+                                <option value="No Size">No Size</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="color" class="form-label">Color</label>
+                            <select class="form-select" id="color" name="color" required>
+                                <option value="">Select Color</option>
+                                <option value="Navy">Navy</option>
+                                <option value="White">White</option>
+                                <option value="Black">Black</option>
+                                <option value="Blue">Blue</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="initialStock" class="form-label">Initial Stock</label>
+                            <input type="number" class="form-control" id="initialStock" name="current_stock" value="1" min="1" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Uniform</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Stock Modal -->
+    <div class="modal fade" id="updateStockModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateStockForm">
+                        <input type="hidden" id="updateUniformId">
+                        <input type="hidden" id="currentStock">
+                        <div class="mb-3">
+                            <label for="newStock" class="form-label">Current Stock</label>
+                            <input type="number" class="form-control" id="newStock" name="quantity" min="0" required>
+                            <small class="form-text text-muted">Enter the new total quantity for this item</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="updateStockForm">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="flash-messages" class="position-fixed top-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html> 

@@ -1,0 +1,199 @@
+/* Custom styles for Uniform Inventory */
+
+/* Navbar styles */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Button styles */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Stock list styles */
+.uniform-section {
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.section-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.add-uniform-btn {
+    color: #bcab82;
+    text-decoration: none;
+    font-size: 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.add-uniform-btn:hover {
+    color: #000;
+}
+
+.uniform-table {
+    margin: 0;
+}
+
+.uniform-table th {
+    background-color: #f8f9fa;
+}
+
+.action-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.action-links a {
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.update-stock-link {
+    color: #bcab82;
+}
+
+.update-stock-link:hover {
+    color: #000;
+}
+
+.delete-link {
+    color: #dc3545;
+}
+
+.delete-link:hover {
+    color: #dc3545;
+    opacity: 0.8;
+}
+
+/* Modal styles */
+.modal-header {
+    background-color: #f8f9fa;
+}
+
+.modal-footer {
+    background-color: #f8f9fa;
+}
+
+/* Flash message styles */
+.alert {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+    min-width: 300px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .action-links {
+        justify-content: center;
+    }
+}
+
+/* Stock Management Button Styles */
+.btn-stock-action {
+    background-color: #BCAB82;
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-stock-action:hover {
+    background-color: #042F66;
+    color: #BCAB82;
+    border: none;
+}
+
+/* Remove default Bootstrap button styles */
+.btn-stock-action.btn-outline-primary,
+.btn-stock-action.btn-outline-danger {
+    background-color: #BCAB82;
+    color: white;
+    border: none;
+}
+
+.btn-stock-action.btn-outline-primary:hover,
+.btn-stock-action.btn-outline-danger:hover {
+    background-color: #042F66;
+    color: #BCAB82;
+    border: none;
+}
+
+/* Table styles */
+.table {
+    font-family: 'Work Sans', sans-serif;
+    color: #505050;
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: #505050;
+    font-size: 13px;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    font-weight: 400;
+    color: #505050;
+    font-size: 13px;
+    padding: 6px 12px;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Adjust card styles to match new table size */
+.card {
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    padding: 0.75rem 1rem;
+}
+
+.card-body {
+    padding: 0.75rem;
+} 
