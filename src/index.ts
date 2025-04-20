@@ -22,7 +22,7 @@ const startServer = async () => {
     app.use(express.json());
 
     // Serve static files from the uniform-inventory directory
-    const staticPath = path.join(process.cwd(), 'uniform-inventory');
+    const staticPath = path.join(__dirname, '..', 'uniform-inventory');
     app.use(express.static(staticPath));
     console.log('Serving static files from:', staticPath);
 
