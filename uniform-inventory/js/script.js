@@ -280,7 +280,8 @@ document.getElementById('addUniformForm').addEventListener('submit', async (e) =
             });
 
             if (!response.ok) {
-                throw new Error('Failed to add uniform');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to add uniform');
             }
 
             showFlashMessage('Uniform added successfully');
