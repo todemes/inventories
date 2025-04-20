@@ -281,6 +281,9 @@ document.getElementById('addUniformForm').addEventListener('submit', async (e) =
 
             if (!response.ok) {
                 const errorData = await response.json();
+                if (errorData.error.includes('read-only')) {
+                    throw new Error('This is a demo version. Database modifications are disabled in production. Please use the development version for full functionality.');
+                }
                 throw new Error(errorData.error || 'Failed to add uniform');
             }
 
