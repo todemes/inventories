@@ -1,34 +1,30 @@
 {
-  "name": "uniform-inventory",
+  "name": "uniform-inventory-ts",
   "version": "1.0.0",
   "description": "Uniform Inventory Management System",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && mkdir -p dist/uniform-inventory && cp -r uniform-inventory/* dist/uniform-inventory/",
     "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "watch": "tsc -w"
   },
-  "keywords": [
-    "inventory",
-    "uniform",
-    "management"
-  ],
+  "keywords": ["inventory", "uniform", "management"],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.4",
     "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.17",
-    "@types/node": "^18.15.11",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.24",
     "@types/sqlite3": "^3.1.8",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-    "typescript": "^5.0.4"
+    "express": "^4.18.3",
+    "sqlite3": "^5.1.7",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22",
-    "ts-node": "^10.9.1"
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2"
   }
-}
+} 
