@@ -18,16 +18,13 @@ function showFlashMessage(message, type = 'success') {
 // Load staff list with their assignments
 async function loadStaffList() {
     try {
-        const response = await fetch(STAFF_API);
+        const response = await fetch(`${STAFF_API}/with-assignments`);
         const staff = await response.json();
         const staffList = document.getElementById('staffList');
         staffList.innerHTML = '';
 
         for (const person of staff) {
-            const assignmentsResponse = await fetch(`${STAFF_API}/assignments/${person.id}`);
-            const assignments = await assignmentsResponse.json();
-            const activeAssignments = assignments.filter(a => a.status === 'assigned');
-            
+            const activeAssignments = (person.assignments || []).filter(a => a.status === 'assigned');
             // Create a row for each assigned uniform
             if (activeAssignments.length > 0) {
                 activeAssignments.forEach((assignment, index) => {

@@ -315,4 +315,59 @@ export class StaffController {
       });
     });
   }
+
+  // Fetch all staff with their assignments in a single query
+  async getAllStaffWithAssignments(): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT 
+          s.id as staff_id,
+          s.name as staff_name,
+          s.department,
+          sa.id as assignment_id,
+          u.id as uniform_id,
+          u.type as uniform_type,
+          u.size as uniform_size,
+          u.color as uniform_color,
+          sa.assigned_date,
+          sa.returned_date,
+          sa.status
+        FROM staff s
+        LEFT JOIN staff_assignments sa ON sa.staff_id = s.id
+        LEFT JOIN uniforms u ON sa.uniform_id = u.id
+        ORDER BY s.name, sa.assigned_date DESC
+      `;
+      this.db.all(query, [], (err: Error | null, rows: any[]) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        // Group by staff
+        const staffMap: { [key: number]: any } = {};
+        rows.forEach(row => {
+          if (!staffMap[row.staff_id]) {
+            staffMap[row.staff_id] = {
+              id: row.staff_id,
+              name: row.staff_name,
+              department: row.department,
+              assignments: []
+            };
+          }
+          if (row.assignment_id) {
+            staffMap[row.staff_id].assignments.push({
+              assignment_id: row.assignment_id,
+              uniform_id: row.uniform_id,
+              uniform_type: row.uniform_type,
+              uniform_size: row.uniform_size,
+              uniform_color: row.uniform_color,
+              assigned_date: row.assigned_date,
+              returned_date: row.returned_date,
+              status: row.status
+            });
+          }
+        });
+        resolve(Object.values(staffMap));
+      });
+    });
+  }
 } 

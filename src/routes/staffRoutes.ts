@@ -107,4 +107,15 @@ router.get('/export', async (req, res) => {
   }
 });
 
+// Get all staff with their assignments
+router.get('/with-assignments', async (req, res) => {
+  try {
+    const controller = initController();
+    const staffWithAssignments = await controller.getAllStaffWithAssignments();
+    res.json(staffWithAssignments);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+});
+
 export default router; 
