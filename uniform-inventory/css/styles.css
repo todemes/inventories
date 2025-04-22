@@ -229,13 +229,15 @@
     display: inline;
 }
 
-@media (max-width: 576px) {
-    /* Top bar action buttons: prevent text wrapping and allow more space */
-    .container > .d-flex.gap-2 .btn-stock-action {
-        min-width: 8.5rem;
-        padding: 0.4rem 0.7rem;
-        font-size: 1rem;
+@media (max-width: 770px) {
+    .container .d-flex.gap-2 .btn-stock-action {
+        min-width: 2.2rem;
+        padding: 0.25rem 0.25rem;
+        font-size: 1.1rem;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     /* Prevent action buttons from stacking and reduce gap/padding */
     .d-flex.gap-2 {
@@ -252,8 +254,8 @@
     .table th {
         padding: 3px 6px;
     }
-    /* Hide text in top bar .btn-stock-action buttons, keep only icon */
-    .container > .d-flex.gap-2 .btn-stock-action .btn-text {
-        display: none;
+    /* Hide text in top bar .btn-stock-action buttons, keep only icon (corrected selector) */
+    .container .d-flex.gap-2 .btn-stock-action .btn-text {
+        display: none !important;
     }
 } 
