@@ -97,25 +97,10 @@
                             <label for="staffName" class="form-label">Name</label>
                             <input type="text" class="form-control" id="staffName" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="department" class="form-label">Department</label>
-                            <select class="form-control" id="department" required>
-                                <option value="">Select department...</option>
-                                <option>Bartender</option>
-                                <option>Captain</option>
-                                <option>Chef</option>
-                                <option>Cruise Director</option>
-                                <option>Deck Crew</option>
-                                <option>Dhoni Captain</option>
-                                <option>Dhoni Crew</option>
-                                <option>Dive</option>
-                                <option>Engineer</option>
-                                <option>Freelance</option>
-                                <option>Housekeeping</option>
-                                <option>Spa Therapist</option>
-                                <option>Waiter</option>
-                                <option>Other</option>
-                            </select>
+                        <div class="mb-3 position-relative">
+                            <label for="departmentInput" class="form-label">Department</label>
+                            <input class="form-control" id="departmentInput" placeholder="Type or select department..." autocomplete="off" required>
+                            <div id="customDepartmentDropdown" class="custom-dropdown-menu"></div>
                         </div>
                     </form>
                 </div>
@@ -138,11 +123,10 @@
                 <div class="modal-body">
                     <form id="assignUniformForm">
                         <input type="hidden" id="assignStaffId">
-                        <div class="mb-3">
-                            <label for="uniformSelect" class="form-label">Select Uniform</label>
-                            <select class="form-select" id="uniformSelect" required>
-                                <!-- Uniform options will be added here dynamically -->
-                            </select>
+                        <div class="mb-3 position-relative">
+                            <label for="uniformInput" class="form-label">Select Uniform</label>
+                            <input class="form-control" id="uniformInput" placeholder="Type to search..." autocomplete="off" required>
+                            <div id="customUniformDropdown" class="custom-dropdown-menu"></div>
                         </div>
                     </form>
                 </div>

@@ -29,13 +29,19 @@ function sortStaff(staff, field) {
     });
 }
 
+// Helper to sort staff by name alphabetically
+function sortStaffByNameAlpha(staff) {
+    return staff.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+}
+
 // Load staff list with their assignments
 async function loadStaffList() {
     try {
         const response = await fetch(`${STAFF_API}/with-assignments`);
         const staff = await response.json();
         allStaff = staff; // Store the full list for filtering
-        renderStaffList(staff);
+        // Always sort by name alphabetically by default
+        renderStaffList(sortStaffByNameAlpha(staff));
     } catch (error) {
         showFlashMessage(error.message, 'danger');
     }
@@ -161,25 +167,103 @@ staffSearchInput.addEventListener('input', function() {
     renderStaffList(filtered);
 });
 
-// Load available uniforms for assignment
+// Custom dropdown for uniform search
+let uniformDropdownOptions = [];
+
 async function loadAvailableUniforms() {
     try {
         const response = await fetch(UNIFORMS_API);
         const uniforms = await response.json();
-        const uniformSelect = document.getElementById('uniformSelect');
-        uniformSelect.innerHTML = '<option value="">Select a uniform...</option>';
-
         const availableUniforms = uniforms.filter(u => u.current_stock > 0);
-        for (const uniform of availableUniforms) {
-            const option = document.createElement('option');
-            option.value = uniform.id;
-            option.textContent = `${uniform.type} (${uniform.size}, ${uniform.color}) - ${uniform.current_stock} in stock`;
-            uniformSelect.appendChild(option);
-        }
+        window._availableUniforms = availableUniforms;
+        uniformDropdownOptions = availableUniforms.map(u => ({
+            id: u.id,
+            label: `${u.type} (${u.size}, ${u.color}) - ${u.current_stock} in stock`,
+        }));
     } catch (error) {
         showFlashMessage(error.message, 'danger');
     }
 }
+
+function showCustomDropdown(filteredOptions) {
+    const dropdown = document.getElementById('customUniformDropdown');
+    dropdown.innerHTML = '';
+    if (filteredOptions.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    filteredOptions.forEach((option, idx) => {
+        const div = document.createElement('div');
+        div.className = 'custom-dropdown-item';
+        div.textContent = option.label;
+        div.dataset.id = option.id;
+        div.tabIndex = 0;
+        div.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            selectUniformOption(option);
+        });
+        dropdown.appendChild(div);
+    });
+    dropdown.style.display = 'block';
+}
+
+function hideCustomDropdown() {
+    const dropdown = document.getElementById('customUniformDropdown');
+    dropdown.style.display = 'none';
+}
+
+function selectUniformOption(option) {
+    document.getElementById('uniformInput').value = option.label;
+    document.getElementById('uniformInput').dataset.selectedId = option.id;
+    hideCustomDropdown();
+}
+
+const uniformInput = document.getElementById('uniformInput');
+uniformInput.addEventListener('input', function() {
+    const value = this.value.trim().toLowerCase();
+    const filtered = uniformDropdownOptions.filter(opt => opt.label.toLowerCase().includes(value));
+    showCustomDropdown(filtered);
+    this.dataset.selectedId = '';
+});
+
+uniformInput.addEventListener('focus', function() {
+    const value = this.value.trim().toLowerCase();
+    const filtered = uniformDropdownOptions.filter(opt => opt.label.toLowerCase().includes(value));
+    showCustomDropdown(filtered);
+});
+
+uniformInput.addEventListener('blur', function() {
+    setTimeout(hideCustomDropdown, 150);
+});
+
+// Keyboard navigation
+uniformInput.addEventListener('keydown', function(e) {
+    const dropdown = document.getElementById('customUniformDropdown');
+    const items = Array.from(dropdown.querySelectorAll('.custom-dropdown-item'));
+    let idx = items.findIndex(item => item.classList.contains('active'));
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (items.length) {
+            if (idx >= 0) items[idx].classList.remove('active');
+            idx = (idx + 1) % items.length;
+            items[idx].classList.add('active');
+            items[idx].scrollIntoView({ block: 'nearest' });
+        }
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length) {
+            if (idx >= 0) items[idx].classList.remove('active');
+            idx = (idx - 1 + items.length) % items.length;
+            items[idx].classList.add('active');
+            items[idx].scrollIntoView({ block: 'nearest' });
+        }
+    } else if (e.key === 'Enter') {
+        if (idx >= 0 && items[idx]) {
+            e.preventDefault();
+            items[idx].dispatchEvent(new Event('mousedown'));
+        }
+    }
+});
 
 // Show assign uniform modal
 function showAssignModal(staffId) {
@@ -196,17 +280,106 @@ function showReturnModal(assignmentId) {
     modal.show();
 }
 
-// Add new staff
-document.getElementById('addStaffForm').addEventListener('submit', async (e) => {
+// Custom dropdown for department search
+const departmentOptions = [
+    'Bartender', 'Captain', 'Chef', 'Cruise Director', 'Deck Crew', 'Dhoni Captain',
+    'Dhoni Crew', 'Dive', 'Engineer', 'Freelance', 'Housekeeping', 'Spa Therapist', 'Waiter', 'Other'
+];
+
+function showDepartmentDropdown(filteredOptions) {
+    const dropdown = document.getElementById('customDepartmentDropdown');
+    dropdown.innerHTML = '';
+    if (filteredOptions.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    filteredOptions.forEach(option => {
+        const div = document.createElement('div');
+        div.className = 'custom-dropdown-item';
+        div.textContent = option;
+        div.tabIndex = 0;
+        div.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            selectDepartmentOption(option);
+        });
+        dropdown.appendChild(div);
+    });
+    dropdown.style.display = 'block';
+}
+
+function hideDepartmentDropdown() {
+    const dropdown = document.getElementById('customDepartmentDropdown');
+    dropdown.style.display = 'none';
+}
+
+function selectDepartmentOption(option) {
+    document.getElementById('departmentInput').value = option;
+    hideDepartmentDropdown();
+}
+
+const departmentInput = document.getElementById('departmentInput');
+departmentInput.addEventListener('input', function() {
+    const value = this.value.trim().toLowerCase();
+    const filtered = departmentOptions.filter(opt => opt.toLowerCase().includes(value));
+    showDepartmentDropdown(filtered);
+});
+departmentInput.addEventListener('focus', function() {
+    const value = this.value.trim().toLowerCase();
+    const filtered = departmentOptions.filter(opt => opt.toLowerCase().includes(value));
+    showDepartmentDropdown(filtered);
+});
+departmentInput.addEventListener('blur', function() {
+    setTimeout(hideDepartmentDropdown, 150);
+});
+departmentInput.addEventListener('keydown', function(e) {
+    const dropdown = document.getElementById('customDepartmentDropdown');
+    const items = Array.from(dropdown.querySelectorAll('.custom-dropdown-item'));
+    let idx = items.findIndex(item => item.classList.contains('active'));
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (items.length) {
+            if (idx >= 0) items[idx].classList.remove('active');
+            idx = (idx + 1) % items.length;
+            items[idx].classList.add('active');
+            items[idx].scrollIntoView({ block: 'nearest' });
+        }
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (items.length) {
+            if (idx >= 0) items[idx].classList.remove('active');
+            idx = (idx - 1 + items.length) % items.length;
+            items[idx].classList.add('active');
+            items[idx].scrollIntoView({ block: 'nearest' });
+        }
+    } else if (e.key === 'Enter') {
+        if (idx >= 0 && items[idx]) {
+            e.preventDefault();
+            items[idx].dispatchEvent(new Event('mousedown'));
+        }
+    }
+});
+
+// Update add staff form submission to use departmentInput value
+const addStaffForm = document.getElementById('addStaffForm');
+addStaffForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
+        const name = document.getElementById('staffName').value.trim();
+        const department = document.getElementById('departmentInput').value.trim();
+        if (!departmentOptions.includes(department)) {
+            showFlashMessage('Please select a valid department from the list.', 'danger');
+            return;
+        }
+        // Prevent duplicate staff (same name and department)
+        const duplicate = allStaff.some(staff => staff.name.trim().toLowerCase() === name.toLowerCase() && staff.department.trim().toLowerCase() === department.toLowerCase());
+        if (duplicate) {
+            showFlashMessage('A staff member with the same name and department already exists.', 'danger');
+            return;
+        }
         const response = await fetch(STAFF_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: document.getElementById('staffName').value,
-                department: document.getElementById('department').value
-            })
+            body: JSON.stringify({ name, department })
         });
 
         if (!response.ok) {
@@ -216,23 +389,28 @@ document.getElementById('addStaffForm').addEventListener('submit', async (e) => 
         const result = await response.json();
         showFlashMessage('Staff member added successfully');
         bootstrap.Modal.getInstance(document.getElementById('addStaffModal')).hide();
-        document.getElementById('addStaffForm').reset();
+        addStaffForm.reset();
         loadStaffList();
     } catch (error) {
         showFlashMessage(error.message, 'danger');
     }
 });
 
-// Assign uniform
+// Assign uniform (update to use selectedId)
 document.getElementById('assignUniformForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
+        const selectedId = document.getElementById('uniformInput').dataset.selectedId;
+        if (!selectedId) {
+            showFlashMessage('Please select a valid uniform from the list.', 'danger');
+            return;
+        }
         const response = await fetch(`${STAFF_API}/assign`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 staff_id: parseInt(document.getElementById('assignStaffId').value),
-                uniform_id: parseInt(document.getElementById('uniformSelect').value)
+                uniform_id: parseInt(selectedId)
             })
         });
 
