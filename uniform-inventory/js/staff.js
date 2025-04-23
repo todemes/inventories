@@ -15,94 +15,151 @@ function showFlashMessage(message, type = 'success') {
     setTimeout(() => alert.remove(), 5000);
 }
 
+let allStaff = [];
+let sortField = null;
+let sortDirection = 1; // 1 for ascending, -1 for descending
+
+function sortStaff(staff, field) {
+    return staff.slice().sort((a, b) => {
+        let aValue = a[field] ? a[field].toLowerCase() : '';
+        let bValue = b[field] ? b[field].toLowerCase() : '';
+        if (aValue < bValue) return -1 * sortDirection;
+        if (aValue > bValue) return 1 * sortDirection;
+        return 0;
+    });
+}
+
 // Load staff list with their assignments
 async function loadStaffList() {
     try {
         const response = await fetch(`${STAFF_API}/with-assignments`);
         const staff = await response.json();
-        const staffList = document.getElementById('staffList');
-        staffList.innerHTML = '';
-
-        for (const person of staff) {
-            const activeAssignments = (person.assignments || []).filter(a => a.status === 'assigned');
-            // Create a row for each assigned uniform
-            if (activeAssignments.length > 0) {
-                activeAssignments.forEach((assignment, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${index === 0 ? person.name : ''}</td>
-                        <td>${index === 0 ? person.department : ''}</td>
-                        <td>${assignment.uniform_type}</td>
-                        <td>${assignment.uniform_size}</td>
-                        <td>${assignment.uniform_color}</td>
-                        <td>
-                            <button class="btn btn-stock-action btn-sm" 
-                                onclick="showReturnModal(${assignment.assignment_id})"
-                                title="Return Uniform">
-                                <i class="bi bi-box-arrow-in-left"></i>
-                            </button>
-                        </td>
-                        <td>
-                            ${index === 0 ? `
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-stock-action btn-sm" 
-                                        onclick="showAssignModal(${person.id})"
-                                        title="Assign Uniform">
-                                        <i class="bi bi-plus-circle"></i>
-                                    </button>
-                                    <button class="btn btn-stock-action btn-sm" 
-                                        onclick="deleteStaff(${person.id})"
-                                        title="Delete Staff">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            ` : ''}
-                        </td>
-                    `;
-                    staffList.appendChild(row);
-                });
-            } else {
-                // If no uniforms assigned, show a single row with empty uniform columns
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${person.name}</td>
-                    <td>${person.department}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-stock-action btn-sm" 
-                                onclick="showAssignModal(${person.id})"
-                                title="Assign Uniform">
-                                <i class="bi bi-plus-circle"></i>
-                            </button>
-                            <button class="btn btn-stock-action btn-sm" 
-                                onclick="deleteStaff(${person.id})"
-                                title="Delete Staff">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                staffList.appendChild(row);
-            }
-        }
-
-        // Initialize tooltips after the staff list is loaded
-        const tooltips = document.querySelectorAll('[title]');
-        tooltips.forEach(el => {
-            new bootstrap.Tooltip(el, {
-                trigger: 'hover',
-                placement: 'top'
-            });
-        });
-
+        allStaff = staff; // Store the full list for filtering
+        renderStaffList(staff);
     } catch (error) {
         showFlashMessage(error.message, 'danger');
     }
 }
+
+function renderStaffList(staff) {
+    const staffList = document.getElementById('staffList');
+    staffList.innerHTML = '';
+    for (const person of staff) {
+        const activeAssignments = (person.assignments || []).filter(a => a.status === 'assigned');
+        // Create a row for each assigned uniform
+        if (activeAssignments.length > 0) {
+            activeAssignments.forEach((assignment, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index === 0 ? person.name : ''}</td>
+                    <td>${index === 0 ? person.department : ''}</td>
+                    <td>${assignment.uniform_type}</td>
+                    <td>${assignment.uniform_size}</td>
+                    <td>${assignment.uniform_color}</td>
+                    <td>
+                        <button class="btn btn-stock-action btn-sm" 
+                            onclick="showReturnModal(${assignment.assignment_id})"
+                            title="Return Uniform">
+                            <i class="bi bi-box-arrow-in-left"></i>
+                        </button>
+                    </td>
+                    <td>
+                        ${index === 0 ? `
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-stock-action btn-sm" 
+                                    onclick="showAssignModal(${person.id})"
+                                    title="Assign Uniform">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                                <button class="btn btn-stock-action btn-sm" 
+                                    onclick="deleteStaff(${person.id})"
+                                    title="Delete Staff">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        ` : ''}
+                    </td>
+                `;
+                staffList.appendChild(row);
+            });
+        } else {
+            // If no uniforms assigned, show a single row with empty uniform columns
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${person.name}</td>
+                <td>${person.department}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-stock-action btn-sm" 
+                            onclick="showAssignModal(${person.id})"
+                            title="Assign Uniform">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                        <button class="btn btn-stock-action btn-sm" 
+                            onclick="deleteStaff(${person.id})"
+                            title="Delete Staff">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            staffList.appendChild(row);
+        }
+    }
+    // Initialize tooltips after the staff list is loaded
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => {
+        new bootstrap.Tooltip(el, {
+            trigger: 'hover',
+            placement: 'top'
+        });
+    });
+}
+
+document.getElementById('sortName').addEventListener('click', function() {
+    if (sortField === 'name') {
+        sortDirection *= -1;
+    } else {
+        sortField = 'name';
+        sortDirection = 1;
+    }
+    const searchValue = document.getElementById('staffSearch').value.trim().toLowerCase();
+    let filtered = allStaff;
+    if (searchValue) {
+        filtered = allStaff.filter(person => person.name.toLowerCase().includes(searchValue));
+    }
+    renderStaffList(sortStaff(filtered, 'name'));
+});
+
+document.getElementById('sortDepartment').addEventListener('click', function() {
+    if (sortField === 'department') {
+        sortDirection *= -1;
+    } else {
+        sortField = 'department';
+        sortDirection = 1;
+    }
+    const searchValue = document.getElementById('staffSearch').value.trim().toLowerCase();
+    let filtered = allStaff;
+    if (searchValue) {
+        filtered = allStaff.filter(person => person.name.toLowerCase().includes(searchValue));
+    }
+    renderStaffList(sortStaff(filtered, 'department'));
+});
+
+// Update search filter to respect current sort
+const staffSearchInput = document.getElementById('staffSearch');
+staffSearchInput.addEventListener('input', function() {
+    const searchValue = this.value.trim().toLowerCase();
+    let filtered = allStaff.filter(person => person.name.toLowerCase().includes(searchValue));
+    if (sortField) {
+        filtered = sortStaff(filtered, sortField);
+    }
+    renderStaffList(filtered);
+});
 
 // Load available uniforms for assignment
 async function loadAvailableUniforms() {

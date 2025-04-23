@@ -54,14 +54,17 @@
                 </div>
 
                 <!-- Staff List -->
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-body">
+                        <div class="mb-3">
+                            <input type="text" id="staffSearch" class="form-control" placeholder="Search staff by name...">
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Department</th>
+                                        <th>Name <span id="sortName" style="cursor:pointer"><i class="bi bi-arrow-down-up"></i></span></th>
+                                        <th>Department <span id="sortDepartment" style="cursor:pointer"><i class="bi bi-arrow-down-up"></i></span></th>
                                         <th>Uniform</th>
                                         <th>Size</th>
                                         <th>Color</th>
@@ -96,7 +99,23 @@
                         </div>
                         <div class="mb-3">
                             <label for="department" class="form-label">Department</label>
-                            <input type="text" class="form-control" id="department" required>
+                            <select class="form-control" id="department" required>
+                                <option value="">Select department...</option>
+                                <option>Bartender</option>
+                                <option>Captain</option>
+                                <option>Chef</option>
+                                <option>Cruise Director</option>
+                                <option>Deck Crew</option>
+                                <option>Dhoni Captain</option>
+                                <option>Dhoni Crew</option>
+                                <option>Dive</option>
+                                <option>Engineer</option>
+                                <option>Freelance</option>
+                                <option>Housekeeping</option>
+                                <option>Spa Therapist</option>
+                                <option>Waiter</option>
+                                <option>Other</option>
+                            </select>
                         </div>
                     </form>
                 </div>

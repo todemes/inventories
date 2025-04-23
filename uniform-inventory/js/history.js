@@ -22,6 +22,8 @@ function formatDate(dateString) {
     return date.toLocaleDateString();
 }
 
+let allHistory = [];
+
 // Load history
 async function loadHistory() {
     try {
@@ -30,30 +32,39 @@ async function loadHistory() {
             throw new Error('Failed to fetch history');
         }
         const history = await response.json();
-        
-        const historyList = document.getElementById('historyList');
-        historyList.innerHTML = history.map(item => `
-            <tr>
-                <td>${formatDate(item.assigned_date)}</td>
-                <td>${formatDate(item.returned_date)}</td>
-                <td>${item.staff_name}</td>
-                <td>${item.department}</td>
-                <td>${item.uniform_type}</td>
-                <td>${item.size}</td>
-                <td>${item.color}</td>
-                <td>
-                    <span class="badge ${item.returned_date ? 'bg-warning' : 'bg-success'}">
-                        ${item.returned_date ? 'Returned' : 'Assigned'}
-                    </span>
-                </td>
-                <td>${item.notes || ''}</td>
-            </tr>
-        `).join('');
-
+        allHistory = history; // Store for filtering
+        renderHistoryList(history);
     } catch (error) {
         showFlashMessage(error.message, 'danger');
     }
 }
+
+function renderHistoryList(history) {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = history.map(item => `
+        <tr>
+            <td>${formatDate(item.assigned_date)}</td>
+            <td>${formatDate(item.returned_date)}</td>
+            <td>${item.staff_name}</td>
+            <td>${item.department}</td>
+            <td>${item.uniform_type}</td>
+            <td>${item.size}</td>
+            <td>${item.color}</td>
+            <td>
+                <span class="badge ${item.returned_date ? 'bg-warning' : 'bg-success'}">
+                    ${item.returned_date ? 'Returned' : 'Assigned'}
+                </span>
+            </td>
+            <td>${item.notes || ''}</td>
+        </tr>
+    `).join('');
+}
+
+document.getElementById('historySearch').addEventListener('input', function() {
+    const searchValue = this.value.trim().toLowerCase();
+    const filtered = allHistory.filter(item => item.staff_name && item.staff_name.toLowerCase().includes(searchValue));
+    renderHistoryList(filtered);
+});
 
 // Export history to CSV
 document.getElementById('exportCsvBtn').addEventListener('click', async () => {
