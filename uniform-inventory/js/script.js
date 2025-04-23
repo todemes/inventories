@@ -73,6 +73,12 @@ function renderStockSections(groupedUniforms, assignedCounts) {
     const filterValue = (document.getElementById('stockTypeSearch')?.value || '').trim().toLowerCase();
     for (const [type, items] of Object.entries(groupedUniforms)) {
         if (filterValue && !type.toLowerCase().includes(filterValue)) continue;
+        // Sort items by color, then by size (using SIZES order)
+        const sortedItems = items.slice().sort((a, b) => {
+            const colorCmp = a.color.localeCompare(b.color, undefined, { sensitivity: 'base' });
+            if (colorCmp !== 0) return colorCmp;
+            return SIZES.indexOf(a.size) - SIZES.indexOf(b.size);
+        });
         const section = document.createElement('div');
         section.className = 'card mb-4';
         section.innerHTML = `
@@ -102,7 +108,7 @@ function renderStockSections(groupedUniforms, assignedCounts) {
                             </tr>
                         </thead>
                         <tbody>
-                            ${items.map(item => {
+                            ${sortedItems.map(item => {
                                 const key = `${item.type}-${item.size}-${item.color}`;
                                 const assignedCount = assignedCounts[key] || 0;
                                 return `
