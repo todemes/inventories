@@ -19,6 +19,9 @@ function showFlashMessage(message, type = 'success') {
     setTimeout(() => alert.remove(), 5000);
 }
 
+let lastGroupedUniforms = {};
+let lastAssignedCounts = {};
+
 // Load stock list
 async function loadStockList() {
     try {
@@ -54,81 +57,90 @@ async function loadStockList() {
             acc[uniform.type].push(uniform);
             return acc;
         }, {});
-
-        const stockList = document.getElementById('stockList');
-        stockList.innerHTML = '';
-
-        // Create sections for each uniform type
-        for (const [type, items] of Object.entries(groupedUniforms)) {
-            const section = document.createElement('div');
-            section.className = 'card mb-4';
-            section.innerHTML = `
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">${type}</h5>
-                    <button class="btn btn-stock-action btn-sm" onclick="showAddUniformModal('${type}')" title="Add ${type}">
-                        <i class="bi bi-plus-lg"></i>
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <colgroup>
-                                <col style="width: 20%">
-                                <col style="width: 20%">
-                                <col style="width: 20%">
-                                <col style="width: 20%">
-                                <col style="width: 20%">
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Size</th>
-                                    <th>Color</th>
-                                    <th>Current Stock</th>
-                                    <th>Assigned</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${items.map(item => {
-                                    const key = `${item.type}-${item.size}-${item.color}`;
-                                    const assignedCount = assignedCounts[key] || 0;
-                                    return `
-                                        <tr>
-                                            <td>${item.size}</td>
-                                            <td>${item.color}</td>
-                                            <td>${item.current_stock}</td>
-                                            <td>${assignedCount}</td>
-                                            <td>
-                                                <button class="btn btn-stock-action btn-sm" 
-                                                        onclick="showUpdateStockModal(${item.id}, ${item.current_stock})"
-                                                        title="Update Stock">
-                                                    <i class="bi bi-arrow-repeat"></i>
-                                                </button>
-                                                <button class="btn btn-stock-action btn-sm" 
-                                                        onclick="deleteUniform(${item.id})"
-                                                        title="Delete">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-            stockList.appendChild(section);
-        }
-
-        // Initialize tooltips
-        const tooltips = document.querySelectorAll('[title]');
-        tooltips.forEach(el => new bootstrap.Tooltip(el));
+        lastGroupedUniforms = groupedUniforms;
+        lastAssignedCounts = assignedCounts;
+        renderStockSections(groupedUniforms, assignedCounts);
 
     } catch (error) {
         showFlashMessage(error.message, 'danger');
     }
 }
+
+function renderStockSections(groupedUniforms, assignedCounts) {
+    const stockList = document.getElementById('stockList');
+    stockList.innerHTML = '';
+    // Get filter value
+    const filterValue = (document.getElementById('stockTypeSearch')?.value || '').trim().toLowerCase();
+    for (const [type, items] of Object.entries(groupedUniforms)) {
+        if (filterValue && !type.toLowerCase().includes(filterValue)) continue;
+        const section = document.createElement('div');
+        section.className = 'card mb-4';
+        section.innerHTML = `
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">${type}</h5>
+                <button class="btn btn-stock-action btn-sm" onclick="showAddUniformModal('${type}')" title="Add ${type}">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <colgroup>
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                            <col style="width: 20%">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Current Stock</th>
+                                <th>Assigned</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${items.map(item => {
+                                const key = `${item.type}-${item.size}-${item.color}`;
+                                const assignedCount = assignedCounts[key] || 0;
+                                return `
+                                    <tr>
+                                        <td>${item.size}</td>
+                                        <td>${item.color}</td>
+                                        <td>${item.current_stock}</td>
+                                        <td>${assignedCount}</td>
+                                        <td>
+                                            <button class="btn btn-stock-action btn-sm" 
+                                                    onclick="showUpdateStockModal(${item.id}, ${item.current_stock})"
+                                                    title="Update Stock">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </button>
+                                            <button class="btn btn-stock-action btn-sm" 
+                                                    onclick="deleteUniform(${item.id})"
+                                                    title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        stockList.appendChild(section);
+    }
+    // Initialize tooltips
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+}
+
+document.getElementById('stockTypeSearch').addEventListener('input', function() {
+    renderStockSections(lastGroupedUniforms, lastAssignedCounts);
+});
 
 // Show add uniform modal
 function showAddUniformModal(type = null) {
