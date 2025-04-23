@@ -18,6 +18,7 @@ function showFlashMessage(message, type = 'success') {
 let allStaff = [];
 let sortField = null;
 let sortDirection = 1; // 1 for ascending, -1 for descending
+let expandedStaffIds = new Set();
 
 function sortStaff(staff, field) {
     return staff.slice().sort((a, b) => {
@@ -52,68 +53,43 @@ function renderStaffList(staff) {
     staffList.innerHTML = '';
     for (const person of staff) {
         const activeAssignments = (person.assignments || []).filter(a => a.status === 'assigned');
-        // Create a row for each assigned uniform
-        if (activeAssignments.length > 0) {
-            activeAssignments.forEach((assignment, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index === 0 ? person.name : ''}</td>
-                    <td>${index === 0 ? person.department : ''}</td>
-                    <td>${assignment.uniform_type}</td>
-                    <td>${assignment.uniform_size}</td>
-                    <td>${assignment.uniform_color}</td>
-                    <td>
-                        <button class="btn btn-stock-action btn-sm" 
-                            onclick="showReturnModal(${assignment.assignment_id})"
-                            title="Return Uniform">
-                            <i class="bi bi-box-arrow-in-left"></i>
-                        </button>
-                    </td>
-                    <td>
-                        ${index === 0 ? `
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-stock-action btn-sm" 
-                                    onclick="showAssignModal(${person.id})"
-                                    title="Assign Uniform">
-                                    <i class="bi bi-plus-circle"></i>
-                                </button>
-                                <button class="btn btn-stock-action btn-sm" 
-                                    onclick="deleteStaff(${person.id})"
-                                    title="Delete Staff">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        ` : ''}
-                    </td>
+        const isExpanded = expandedStaffIds.has(person.id);
+        // Row for staff info
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                ${person.name}
+                ${activeAssignments.length > 0 ? `<button class="btn btn-link btn-sm p-0 ms-2 staff-toggle" data-staff-id="${person.id}" title="Toggle uniforms"><i class="bi bi-chevron-${isExpanded ? 'down' : 'right'}"></i></button>` : ''}
+            </td>
+            <td>${person.department}</td>
+            <td>${activeAssignments.length > 0 && isExpanded ? activeAssignments[0].uniform_type : '-'}</td>
+            <td>${activeAssignments.length > 0 && isExpanded ? activeAssignments[0].uniform_size : '-'}</td>
+            <td>${activeAssignments.length > 0 && isExpanded ? activeAssignments[0].uniform_color : '-'}</td>
+            <td>${activeAssignments.length > 0 && isExpanded ? `<button class="btn btn-stock-action btn-sm" onclick="showReturnModal(${activeAssignments[0].assignment_id})" title="Return Uniform"><i class="bi bi-box-arrow-in-left"></i></button>` : '-'}</td>
+            <td>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-stock-action btn-sm" onclick="showAssignModal(${person.id})" title="Assign Uniform"><i class="bi bi-plus-circle"></i></button>
+                    <button class="btn btn-stock-action btn-sm" onclick="deleteStaff(${person.id})" title="Delete Staff"><i class="bi bi-trash"></i></button>
+                </div>
+            </td>
+        `;
+        staffList.appendChild(row);
+        // Additional rows for other assignments if expanded
+        if (isExpanded && activeAssignments.length > 1) {
+            for (let i = 1; i < activeAssignments.length; i++) {
+                const a = activeAssignments[i];
+                const assignRow = document.createElement('tr');
+                assignRow.innerHTML = `
+                    <td></td>
+                    <td></td>
+                    <td>${a.uniform_type}</td>
+                    <td>${a.uniform_size}</td>
+                    <td>${a.uniform_color}</td>
+                    <td><button class="btn btn-stock-action btn-sm" onclick="showReturnModal(${a.assignment_id})" title="Return Uniform"><i class="bi bi-box-arrow-in-left"></i></button></td>
+                    <td></td>
                 `;
-                staffList.appendChild(row);
-            });
-        } else {
-            // If no uniforms assigned, show a single row with empty uniform columns
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${person.name}</td>
-                <td>${person.department}</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-stock-action btn-sm" 
-                            onclick="showAssignModal(${person.id})"
-                            title="Assign Uniform">
-                            <i class="bi bi-plus-circle"></i>
-                        </button>
-                        <button class="btn btn-stock-action btn-sm" 
-                            onclick="deleteStaff(${person.id})"
-                            title="Delete Staff">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            staffList.appendChild(row);
+                staffList.appendChild(assignRow);
+            }
         }
     }
     // Initialize tooltips after the staff list is loaded
@@ -124,6 +100,19 @@ function renderStaffList(staff) {
             placement: 'top'
         });
     });
+    // Add toggle event listeners
+    document.querySelectorAll('.staff-toggle').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const staffId = parseInt(this.getAttribute('data-staff-id'));
+            if (expandedStaffIds.has(staffId)) {
+                expandedStaffIds.delete(staffId);
+            } else {
+                expandedStaffIds.add(staffId);
+            }
+            renderStaffList(staff);
+        });
+    });
+    updateToggleAllStaffBtn();
 }
 
 document.getElementById('sortName').addEventListener('click', function() {
@@ -509,6 +498,31 @@ document.getElementById('exportCsvBtn').addEventListener('click', async () => {
         showFlashMessage(error.message, 'danger');
     }
 });
+
+function areAllStaffExpanded() {
+    return allStaff.every(person => (person.assignments || []).some(a => a.status === 'assigned') ? expandedStaffIds.has(person.id) : true);
+}
+
+document.getElementById('toggleAllStaffBtn').addEventListener('click', function() {
+    const expand = !areAllStaffExpanded();
+    allStaff.forEach(person => {
+        if ((person.assignments || []).some(a => a.status === 'assigned')) {
+            if (expand) {
+                expandedStaffIds.add(person.id);
+            } else {
+                expandedStaffIds.delete(person.id);
+            }
+        }
+    });
+    renderStaffList(sortField ? sortStaff(allStaff, sortField) : sortStaffByNameAlpha(allStaff));
+    updateToggleAllStaffBtn();
+});
+
+function updateToggleAllStaffBtn() {
+    const expand = !areAllStaffExpanded();
+    document.getElementById('toggleAllStaffIcon').className = expand ? 'bi bi-arrows-angle-expand' : 'bi bi-arrows-angle-contract';
+    document.getElementById('toggleAllStaffText').textContent = expand ? 'Expand All' : 'Collapse All';
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
