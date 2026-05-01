@@ -18,13 +18,22 @@ const startServer = async () => {
     const port = process.env.PORT || 3000;
 
     // Middleware
-    app.use(cors());
+    const corsOrigin = process.env.CORS_ORIGIN;
+    app.use(cors(corsOrigin ? {
+      origin: corsOrigin.split(',').map(origin => origin.trim()).filter(Boolean),
+      credentials: true
+    } : undefined));
     app.use(express.json());
 
     // Serve static files from the uniform-inventory directory
     const staticPath = path.join(process.cwd(), 'uniform-inventory');
     app.use(express.static(staticPath));
     console.log('Serving static files from:', staticPath);
+
+    // Health check
+    app.get('/api/health', (_req, res) => {
+      res.json({ status: 'ok', service: 'uniform-inventory' });
+    });
 
     // API Routes
     app.use('/api/uniforms', uniformRoutes);
