@@ -146,8 +146,8 @@ function updateSortIndicators() {
         desc: '▼'
     };
     const headers = [
-        { el: assignedHeader(), field: 'assigned_date', label: 'Assigned' },
-        { el: returnedHeader(), field: 'returned_date', label: 'Returned' }
+        { el: assignedHeader(), field: 'assigned_date', label: 'Assigned Date' },
+        { el: returnedHeader(), field: 'returned_date', label: 'Returned Date' }
     ];
 
     headers.forEach(({ el, field, label }) => {
@@ -231,28 +231,25 @@ function renderHistoryList(history) {
         const isChecked = selectedHistoryIds.has(item.assignment_id);
         return `
         <tr>
-            <td class="history-date-cell" data-label="Dates">
-                <div><span>Assigned</span><strong>${formatDate(item.assigned_date)}</strong></div>
-                <div><span>Returned</span><strong>${formatDate(item.returned_date)}</strong></div>
-            </td>
+            <td class="history-date-cell" data-label="Assigned Date">${formatDate(item.assigned_date)}</td>
+            <td class="history-date-cell" data-label="Returned Date">${formatDate(item.returned_date)}</td>
             <td class="history-staff-cell" data-label="Staff">
                 <strong>${item.staff_name || '-'}</strong>
-                <span>${item.department || '-'}</span>
             </td>
+            <td data-label="Department">${item.department || '-'}</td>
             <td class="history-uniform-type-cell" data-label="Uniform">
                 <strong>${item.uniform_type || '-'}</strong>
-                <span>${item.size || '-'} / ${item.color || '-'}</span>
             </td>
+            <td data-label="Size">${item.size || '-'}</td>
+            <td data-label="Color">${item.color || '-'}</td>
             <td data-label="Assigned by">${item.assigned_by ? item.assigned_by : '-'}</td>
-            <td class="history-condition-cell" data-label="Condition">
-                <div><span>Assigned</span><strong>${item.assigned_condition ? item.assigned_condition : '-'}</strong></div>
-                <div><span>Returned</span><strong>${item.returned_condition ? item.returned_condition : '-'}</strong></div>
-            </td>
+            <td class="history-assigned-condition-cell" data-label="Assigned Condition">${item.assigned_condition ? item.assigned_condition : '-'}</td>
+            <td class="history-returned-condition-cell" data-label="Returned Condition">${item.returned_condition ? item.returned_condition : '-'}</td>
             <td class="text-center history-qty-cell" data-label="Qty">${item.quantity || 1}</td>
             <td class="history-status-cell" data-label="Status">
                 <span class="badge ${badgeClass}">${statusLabel}</span>
-                ${item.notes ? `<span class="history-note" title="${item.notes}">${item.notes}</span>` : ''}
             </td>
+            <td class="history-comment-cell" data-label="Comment" title="${item.notes || ''}">${item.notes || '-'}</td>
             <td class="history-select-cell text-center" data-label="Select">
                 <input type="checkbox" class="form-check-input history-select"
                     data-id="${item.assignment_id}"

@@ -921,21 +921,26 @@ body {
 .assignment-history-table {
     table-layout: auto;
     width: 100%;
-    min-width: 52rem;
+    min-width: 70rem;
 }
 
-.history-date-col { width: 9.5rem; }
-.history-staff-col { width: 7rem; }
-.history-uniform-col { width: 14rem; }
-.history-assigned-by-col { width: 8rem; }
-.history-condition-col { width: 10.5rem; }
-.history-qty-col { width: 3rem; }
-.history-status-col { width: 6.5rem; }
-.history-select-col { width: 3rem; }
+.history-assigned-date-col { width: 6.3rem; }
+.history-returned-date-col { width: 6.3rem; }
+.history-staff-col { width: 5.8rem; }
+.history-department-col { width: 7.4rem; }
+.history-uniform-col { width: 10.5rem; }
+.history-size-col { width: 4.4rem; }
+.history-color-col { width: 4.6rem; }
+.history-assigned-by-col { width: 6rem; }
+.history-condition-col { width: 5.7rem; }
+.history-qty-col { width: 2.4rem; }
+.history-status-col { width: 5.6rem; }
+.history-comment-col { width: 7rem; }
+.history-select-col { width: 2.4rem; }
 
 .assignment-history-table th,
 .assignment-history-table td {
-    padding: 0.52rem 0.5rem;
+    padding: 0.46rem 0.32rem;
     white-space: nowrap;
     overflow-wrap: normal;
     vertical-align: middle;
@@ -971,33 +976,19 @@ body {
     color: var(--brand-blue);
 }
 
-.history-date-cell,
-.history-condition-cell {
-    display: flex;
-    flex-direction: column;
-    gap: 0.18rem;
+.history-condition-header {
+    line-height: 1.08;
 }
 
-.history-date-cell div,
-.history-condition-cell div {
-    display: grid;
-    grid-template-columns: 4.35rem max-content;
-    align-items: baseline;
-    gap: 0.3rem;
-}
-
-.history-date-cell span,
-.history-condition-cell span,
 .history-staff-cell span,
 .history-uniform-type-cell span,
-.history-note {
+.history-note,
+.history-comment-cell {
     color: #7a8493;
     font-size: 0.76rem;
     font-weight: 500;
 }
 
-.history-date-cell strong,
-.history-condition-cell strong,
 .history-staff-cell strong,
 .history-uniform-type-cell strong {
     color: #344054;
@@ -1029,8 +1020,10 @@ body {
     margin-bottom: 0.12rem;
 }
 
-.history-status-cell .history-note {
-    max-width: 100%;
+.history-comment-cell {
+    max-width: 7rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .history-qty-cell {
@@ -1049,50 +1042,42 @@ body {
     white-space: nowrap;
 }
 
-.assignment-history-table .history-condition-cell {
-    min-width: 10.5rem;
-}
-
 .assignment-history-table .history-status-cell {
     white-space: nowrap;
 }
 
 @media (min-width: 641px) and (max-width: 1280px) {
     .assignment-history-table {
-        min-width: 46rem;
+        min-width: 64rem;
     }
 
     .assignment-history-table th,
     .assignment-history-table td {
-        padding-left: 0.38rem;
-        padding-right: 0.38rem;
+        padding-left: 0.26rem;
+        padding-right: 0.26rem;
         font-size: 0.78rem;
     }
 
-    .history-date-col { width: 8rem; }
-    .history-staff-col { width: 5.8rem; }
-    .history-uniform-col { width: 10.5rem; }
-    .history-assigned-by-col { width: 6.2rem; }
-    .history-condition-col { width: 8.5rem; }
-    .history-qty-col { width: 2.5rem; }
-    .history-status-col { width: 5.2rem; }
+    .history-assigned-date-col { width: 5.9rem; }
+    .history-returned-date-col { width: 5.9rem; }
+    .history-staff-col { width: 5.4rem; }
+    .history-department-col { width: 6.8rem; }
+    .history-uniform-col { width: 9.6rem; }
+    .history-size-col { width: 4rem; }
+    .history-color-col { width: 4.2rem; }
+    .history-assigned-by-col { width: 5.4rem; }
+    .history-condition-col { width: 5.2rem; }
+    .history-qty-col { width: 2.2rem; }
+    .history-status-col { width: 4.8rem; }
+    .history-comment-col { width: 6.2rem; }
 
-    .history-date-cell div,
-    .history-condition-cell div {
-        grid-template-columns: 3.85rem max-content;
-        gap: 0.25rem;
-    }
-
-    .history-date-cell span,
-    .history-condition-cell span,
     .history-staff-cell span,
     .history-uniform-type-cell span,
-    .history-note {
+    .history-note,
+    .history-comment-cell {
         font-size: 0.7rem;
     }
 
-    .history-date-cell strong,
-    .history-condition-cell strong,
     .history-staff-cell strong,
     .history-uniform-type-cell strong {
         font-size: 0.8rem;
@@ -1115,13 +1100,14 @@ body {
 
     .assignment-history-table tbody tr {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
             "uniform status"
             "staff qty"
-            "dates dates"
-            "condition condition"
-            "assignedby assignedby"
+            "department assignedby"
+            "assigneddate returneddate"
+            "assignedcond returnedcond"
+            "comment comment"
             "select select";
         gap: 0.45rem 0.75rem;
     }
@@ -1134,17 +1120,20 @@ body {
         content: none;
     }
 
-    .assignment-history-table .history-date-cell { grid-area: dates; }
+    .assignment-history-table .history-date-cell[data-label="Assigned Date"] { grid-area: assigneddate; }
+    .assignment-history-table .history-date-cell[data-label="Returned Date"] { grid-area: returneddate; }
     .assignment-history-table .history-staff-cell { grid-area: staff; }
+    .assignment-history-table td[data-label="Department"] { grid-area: department; }
     .assignment-history-table .history-uniform-type-cell { grid-area: uniform; }
     .assignment-history-table td[data-label="Assigned by"] { grid-area: assignedby; }
-    .assignment-history-table .history-condition-cell { grid-area: condition; }
+    .assignment-history-table .history-assigned-condition-cell { grid-area: assignedcond; }
+    .assignment-history-table .history-returned-condition-cell { grid-area: returnedcond; }
     .assignment-history-table .history-qty-cell { grid-area: qty; }
     .assignment-history-table .history-status-cell { grid-area: status; text-align: right; }
+    .assignment-history-table .history-comment-cell { grid-area: comment; }
     .assignment-history-table .history-select-cell { grid-area: select; }
 
-    .assignment-history-table .history-date-cell,
-    .assignment-history-table .history-condition-cell {
+    .assignment-history-table .history-date-cell {
         padding-top: 0.35rem;
         border-top: 1px solid var(--line);
     }
@@ -1173,16 +1162,16 @@ body {
     .assignment-history-table tbody tr {
         display: grid;
         width: auto;
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         grid-template-areas:
-            "uniform"
-            "staff"
-            "status"
-            "dates"
-            "condition"
-            "assignedby"
-            "qty"
-            "select";
+            "uniform uniform"
+            "staff status"
+            "department assignedby"
+            "assigneddate returneddate"
+            "assignedcond returnedcond"
+            "comment comment"
+            "qty qty"
+            "select select";
         align-items: start;
         gap: 0.5rem;
         margin: 0.62rem 0.65rem;
@@ -1260,13 +1249,12 @@ body {
         text-transform: uppercase;
     }
 
-    .assignment-history-table .history-date-cell {
-        grid-area: dates;
-    }
-
-    .assignment-history-table .history-condition-cell {
-        grid-area: condition;
-    }
+    .assignment-history-table .history-date-cell[data-label="Assigned Date"] { grid-area: assigneddate; }
+    .assignment-history-table .history-date-cell[data-label="Returned Date"] { grid-area: returneddate; }
+    .assignment-history-table td[data-label="Department"] { grid-area: department; }
+    .assignment-history-table .history-assigned-condition-cell { grid-area: assignedcond; }
+    .assignment-history-table .history-returned-condition-cell { grid-area: returnedcond; }
+    .assignment-history-table .history-comment-cell { grid-area: comment; }
 
     .assignment-history-table td[data-label="Assigned by"] {
         grid-area: assignedby;
@@ -1300,33 +1288,28 @@ body {
         display: block !important;
     }
 
-    .assignment-history-table .history-date-cell,
-    .assignment-history-table .history-condition-cell {
-        gap: 0.24rem;
+    .assignment-history-table .history-date-cell {
         padding-top: 0.45rem;
         border-top: 1px solid var(--line);
     }
 
-    .assignment-history-table .history-date-cell div,
-    .assignment-history-table .history-condition-cell div {
-        display: grid;
-        grid-template-columns: 5.2rem minmax(0, 1fr);
-        align-items: center;
-        gap: 0.55rem;
+    .assignment-history-table .history-cell-stack {
+        grid-template-rows: repeat(2, 1.08rem);
+        row-gap: 0.06rem;
     }
 
-    .assignment-history-table .history-date-cell span,
-    .assignment-history-table .history-condition-cell span,
+    .assignment-history-table .history-cell-stack span,
     .assignment-history-table .history-staff-cell span,
     .assignment-history-table .history-uniform-type-cell span,
-    .assignment-history-table .history-note {
+    .assignment-history-table .history-note,
+    .assignment-history-table .history-comment-cell {
         color: #7a8493;
         font-size: 0.74rem;
         font-weight: 500;
     }
 
-    .assignment-history-table .history-date-cell strong,
-    .assignment-history-table .history-condition-cell strong,
+    .assignment-history-table .history-cell-stack span,
+    .assignment-history-table .history-cell-stack strong,
     .assignment-history-table .history-staff-cell strong,
     .assignment-history-table .history-uniform-type-cell strong {
         color: #344054;
