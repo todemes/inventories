@@ -10,8 +10,46 @@
     <link href="css/styles.css" rel="stylesheet">
     <style>
         .table td {
-            font-size: 14px;
+            font-size: 13px;
             vertical-align: middle;
+        }
+
+        .history-select-header,
+        .history-select-cell {
+            display: none;
+        }
+
+        .history-select-col {
+            display: none;
+        }
+
+        #historyTable.history-table-edit .history-select-header,
+        #historyTable.history-table-edit .history-select-cell {
+            display: table-cell;
+        }
+
+        #historyTable.history-table-edit .history-select-col {
+            display: table-column;
+        }
+
+        .history-select-cell {
+            text-align: center;
+        }
+
+        #historyTable .history-uniform-type-header,
+        #historyTable .history-uniform-type-cell {
+            white-space: nowrap;
+        }
+
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sort-indicator {
+            font-size: 0.85em;
+            margin-left: 6px;
+            opacity: 0.75;
         }
     </style>
 </head>
@@ -23,12 +61,15 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
                         <a class="nav-link" href="index.html">Stock</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="staff.html">Staff</a>
+                        <a class="nav-link" href="staff.html">Staff Assignments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="staff-directory.html">Staff Directory</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="history.html">History</a>
@@ -39,11 +80,17 @@
     </nav>
 
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h2>Assignment History</h2>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap justify-content-start">
+                <button class="btn btn-stock-action" id="editHistoryBtn">
+                    <i class="bi bi-pencil"></i> <span class="btn-text">Edit</span>
+                </button>
+                <button class="btn btn-stock-action d-none" id="deleteHistoryBtn" disabled>
+                    <i class="bi bi-trash"></i> <span class="btn-text">Delete Selected</span>
+                </button>
                 <button class="btn btn-stock-action" id="exportCsvBtn">
-                    <i class="bi bi-download"></i> <span class="btn-text">Export to CSV</span>
+                    <i class="bi bi-download"></i> <span class="btn-text">Export</span>
                 </button>
             </div>
         </div>
@@ -51,32 +98,39 @@
         <div class="card">
             <div class="card-body">
                 <div class="mb-3">
-                    <input type="text" id="historySearch" class="form-control" placeholder="Search by staff name...">
+                    <input type="text" id="historySearch" class="form-control" placeholder="Search by staff, department, uniform, size, or color...">
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-hover">
+                <div class="table-responsive assignment-history-responsive">
+                    <table class="table table-hover assignment-history-table" id="historyTable">
                         <colgroup>
-                            <col style="width: 12%">
-                            <col style="width: 12%">
-                            <col style="width: 12%">
-                            <col style="width: 12%">
-                            <col style="width: 12%">
-                            <col style="width: 10%">
-                            <col style="width: 10%">
-                            <col style="width: 10%">
-                            <col style="width: 10%">
+                            <col class="history-date-col">
+                            <col class="history-staff-col">
+                            <col class="history-uniform-col">
+                            <col class="history-assigned-by-col">
+                            <col class="history-condition-col">
+                            <col class="history-qty-col">
+                            <col class="history-status-col">
+                            <col class="history-select-col">
                         </colgroup>
                         <thead>
                             <tr>
-                                <th>Assigned Date</th>
-                                <th>Returned Date</th>
+                                <th class="history-dates-header">
+                                    <button type="button" id="assignedDateHeader" class="history-sort-button sortable">
+                                        Assigned <span class="sort-indicator" aria-hidden="true"></span>
+                                    </button>
+                                    <button type="button" id="returnedDateHeader" class="history-sort-button sortable">
+                                        Returned <span class="sort-indicator" aria-hidden="true"></span>
+                                    </button>
+                                </th>
                                 <th>Staff</th>
-                                <th>Department</th>
-                                <th>Uniform Type</th>
-                                <th>Size</th>
-                                <th>Color</th>
+                                <th class="history-uniform-type-header">Uniform</th>
+                                <th>Assigned by</th>
+                                <th>Condition</th>
+                                <th class="text-center">Qty</th>
                                 <th>Status</th>
-                                <th>Notes</th>
+                                <th class="history-select-header text-center">
+                                    <input type="checkbox" class="form-check-input" id="selectAllHistory" aria-label="Select all removable entries" title="Select all removable entries">
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="historyList">
@@ -91,6 +145,7 @@
     <div id="flash-messages" class="position-fixed top-0 end-0 p-3"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils/export.js"></script>
     <script src="js/history.js"></script>
 </body>
 </html> 

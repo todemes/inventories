@@ -28,7 +28,10 @@
                         <a class="nav-link" href="index.html">Stock</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="staff.html">Staff</a>
+                        <a class="nav-link active" href="staff.html">Staff Assignments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="staff-directory.html">Staff Directory</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="history.html">History</a>
@@ -41,17 +44,14 @@
     <div class="container mt-4">
         <div class="row">
             <div class="col-md-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Staff Management</h2>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-stock-action" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-                            <i class="bi bi-person-plus"></i> <span class="btn-text">Add Staff</span>
-                        </button>
-                        <button class="btn btn-stock-action" id="exportCsvBtn">
-                            <i class="bi bi-download"></i> <span class="btn-text">Export to CSV</span>
-                        </button>
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h2>Staff Assignments</h2>
+                    <div class="d-flex gap-2 flex-wrap justify-content-start">
                         <button class="btn btn-stock-action" id="toggleAllStaffBtn">
                             <i class="bi bi-arrows-angle-expand" id="toggleAllStaffIcon"></i> <span class="btn-text" id="toggleAllStaffText">Expand All</span>
+                        </button>
+                        <button class="btn btn-stock-action" id="exportCsvBtn">
+                            <i class="bi bi-download"></i> <span class="btn-text">Export</span>
                         </button>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="mb-3">
-                            <input type="text" id="staffSearch" class="form-control" placeholder="Search staff by name...">
+                            <input type="text" id="staffSearch" class="form-control" placeholder="Search by staff, department, uniform, size, color, or condition...">
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -71,8 +71,12 @@
                                         <th>Uniform</th>
                                         <th>Size</th>
                                         <th>Color</th>
+                                        <th>Location</th>
+                                        <th>Qty</th>
+                                        <th>Condition</th>
+                                        <th>Return Condition</th>
                                         <th>Return</th>
-                                        <th>Actions</th>
+                                        <th>Assign</th>
                                     </tr>
                                 </thead>
                                 <tbody id="staffList">
@@ -81,35 +85,6 @@
                             </table>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Staff Modal -->
-    <div class="modal fade" id="addStaffModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Staff</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addStaffForm">
-                        <div class="mb-3">
-                            <label for="staffName" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="staffName" required>
-                        </div>
-                        <div class="mb-3 position-relative">
-                            <label for="departmentInput" class="form-label">Department</label>
-                            <input class="form-control" id="departmentInput" placeholder="Type or select department..." autocomplete="off" required>
-                            <div id="customDepartmentDropdown" class="custom-dropdown-menu"></div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="addStaffForm" class="btn btn-primary">Add Staff</button>
                 </div>
             </div>
         </div>
@@ -130,6 +105,26 @@
                             <label for="uniformInput" class="form-label">Select Uniform</label>
                             <input class="form-control" id="uniformInput" placeholder="Type to search..." autocomplete="off" required>
                             <div id="customUniformDropdown" class="custom-dropdown-menu"></div>
+                            <div id="assignLocationInfo" class="form-text">Select a uniform location to see available quantity.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assignQuantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="assignQuantity" min="1" value="1" required>
+                            <div id="assignQuantityInfo" class="form-text">Available: <span id="assignQuantityAvailable">0</span></div>
+                            <div id="assignQuantityFeedback" class="form-text text-danger d-none"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assignCondition" class="form-label">Condition</label>
+                            <select class="form-select" id="assignCondition" required>
+                                <option value="New" selected>New</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                                <option value="Poor">Poor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="assignPerformedBy" class="form-label">Assigned by</label>
+                            <input type="text" class="form-control" id="assignPerformedBy" required placeholder="Enter your name">
                         </div>
                     </form>
                 </div>
@@ -168,9 +163,29 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label for="returnNotes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="returnNotes" rows="3" placeholder="Enter any notes about the return (e.g., condition, reason for return)"></textarea>
-                            <div class="form-text">Optional: Add any relevant information about the uniform's return.</div>
+                            <label for="returnCondition" class="form-label">Condition</label>
+                            <select class="form-select" id="returnCondition" required>
+                                <option value="New">New</option>
+                                <option value="Good" selected>Good</option>
+                                <option value="Fair">Fair</option>
+                                <option value="Poor">Poor</option>
+                                <option value="__add__">Add Condition</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="returnAssignmentWrapper">
+                            <label for="returnAssignmentSelect" class="form-label">Select Assignment</label>
+                            <select class="form-select" id="returnAssignmentSelect"></select>
+                            <div class="form-text" id="returnAssignmentHelper">Choose one date or all matching items with the same uniform and condition.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="returnReason" class="form-label">Reason <span class="text-muted fw-normal">(optional)</span></label>
+                            <input type="text" class="form-control" id="returnReason" maxlength="250" placeholder="e.g., damaged, wrong size, replacement">
+                        </div>
+                        <div class="mb-3">
+                            <label for="returnQuantity" class="form-label">Quantity to Return</label>
+                            <input type="number" class="form-control" id="returnQuantity" min="1" value="1" required>
+                            <div id="returnQuantityInfo" class="form-text">Assigned: <span id="returnQuantityAvailable">0</span></div>
+                            <div id="returnQuantityFeedback" class="form-text text-danger d-none"></div>
                         </div>
                     </form>
                 </div>
@@ -184,7 +199,32 @@
 
     <div id="flash-messages" class="position-fixed top-0 end-0 p-3"></div>
 
+    <!-- Add Condition Modal -->
+    <div class="modal fade" id="addConditionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Condition</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="addConditionInput" class="form-label">Condition Name</label>
+                    <input type="text" class="form-control" id="addConditionInput" autocomplete="off" placeholder="Max 15 characters">
+                    <div class="d-flex justify-content-between mt-2">
+                        <div class="form-text" id="addConditionCharCount">0 / 15</div>
+                        <div class="form-text text-danger d-none" id="addConditionFeedback">Maximum 15 characters allowed.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelAddConditionBtn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmAddConditionBtn">Add Condition</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils/export.js"></script>
     <script src="js/staff.js"></script>
 </body>
 </html> 

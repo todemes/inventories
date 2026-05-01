@@ -23,12 +23,15 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
                         <a class="nav-link active" href="index.html">Stock</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="staff.html">Staff</a>
+                        <a class="nav-link" href="staff.html">Staff Assignments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="staff-directory.html">Staff Directory</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="history.html">History</a>
@@ -39,15 +42,18 @@
     </nav>
 
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <h2>Stock Management</h2>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap justify-content-start">
                 <button type="button" class="btn btn-stock-action" id="addNewUniformBtn">
                     <i class="bi bi-plus-lg"></i> <span class="btn-text">Add New Uniform</span>
                 </button>
                 <button class="btn btn-stock-action" id="exportCsvBtn">
-                    <i class="bi bi-download"></i> <span class="btn-text">Export to CSV</span>
+                    <i class="bi bi-download"></i> <span class="btn-text">Export</span>
                 </button>
+                <a class="btn btn-stock-action" href="stock-history.html" id="viewStockHistoryBtn">
+                    <i class="bi bi-clock-history"></i> <span class="btn-text">View Stock History</span>
+                </a>
             </div>
         </div>
         <div class="mb-3">
@@ -95,6 +101,23 @@
                                 <option value="Blue">Blue</option>
                             </select>
                         </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-5">
+                                <label for="addVessel" class="form-label">Vessel</label>
+                                <select class="form-select" id="addVessel" name="vessel" required>
+                                    <option value="yin" selected>Yin</option>
+                                    <option value="yang">Yang</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <label for="addStorageLocation" class="form-label">Storage Location</label>
+                                <select class="form-select" id="addStorageLocation" name="storage_location" required></select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addUpdatedBy" class="form-label">Updated By</label>
+                            <input type="text" class="form-control" id="addUpdatedBy" name="updatedBy" required placeholder="Enter your name">
+                        </div>
                         <div class="mb-3">
                             <label for="initialStock" class="form-label">Initial Stock</label>
                             <input type="number" class="form-control" id="initialStock" name="current_stock" value="1" min="1" required>
@@ -122,9 +145,48 @@
                         <input type="hidden" id="updateUniformId">
                         <input type="hidden" id="currentStock">
                         <div class="mb-3">
-                            <label for="newStock" class="form-label">Current Stock</label>
-                            <input type="number" class="form-control" id="newStock" name="quantity" min="0" required>
-                            <small class="form-text text-muted">Enter the new total quantity for this item</small>
+                            <label class="form-label">Uniform</label>
+                            <div id="updateUniformSummary" class="fw-semibold"></div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-5">
+                                <label for="updateVessel" class="form-label">Vessel</label>
+                                <select class="form-select" id="updateVessel" required>
+                                    <option value="yin">Yin</option>
+                                    <option value="yang">Yang</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <label for="updateStorageLocation" class="form-label">Storage Location</label>
+                                <select class="form-select" id="updateStorageLocation" required></select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Current Stock in Location</label>
+                                <input type="number" class="form-control" id="currentStockDisplay" disabled>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="newStock" class="form-label">New Stock</label>
+                                <input type="number" class="form-control" id="newStock" name="quantity" min="0" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="updatePerformedBy" class="form-label">Updated By</label>
+                            <input type="text" class="form-control" id="updatePerformedBy" required placeholder="Enter your name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="updateReason" class="form-label">Reason</label>
+                            <select class="form-select" id="updateReason" required>
+                                <option value="">Select reason</option>
+                                <option value="Stock take">Stock take</option>
+                                <option value="New order">New order</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="updateReasonDetailWrapper">
+                            <label for="updateReasonDetail" class="form-label">Please specify</label>
+                            <input type="text" class="form-control" id="updateReasonDetail" maxlength="100" placeholder="Describe the reason">
                         </div>
                     </form>
                 </div>
@@ -136,9 +198,105 @@
         </div>
     </div>
 
+
+    <!-- Stock Locations Modal -->
+    <div class="modal fade" id="stockLocationsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stockLocationsModalLabel">Stock Locations</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="stockLocationsModalBody">
+                        <p class="text-muted mb-0">No stock locations recorded.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="openTransferStockBtn">Transfer Stock</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Stock Modal -->
+    <div class="modal fade" id="transferStockModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Transfer Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="transferStockForm">
+                        <input type="hidden" id="transferUniformId">
+                        <div class="mb-3">
+                            <label class="form-label">Uniform</label>
+                            <div id="transferUniformSummary" class="fw-semibold"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transferFromLocation" class="form-label">From location</label>
+                            <select class="form-select" id="transferFromLocation" required></select>
+                            <div class="form-text">Only locations with stock are listed.</div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-5">
+                                <label for="transferToVessel" class="form-label">To vessel</label>
+                                <select class="form-select" id="transferToVessel" required>
+                                    <option value="yin">Yin</option>
+                                    <option value="yang">Yang</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7">
+                                <label for="transferToStorageLocation" class="form-label">To storage location</label>
+                                <select class="form-select" id="transferToStorageLocation" required></select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transferQuantity" class="form-label">Quantity</label>
+                            <input type="number" class="form-control" id="transferQuantity" min="1" value="1" required>
+                            <div class="form-text">Available at source: <span id="transferAvailableQuantity">0</span></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transferUpdatedBy" class="form-label">Transferred by</label>
+                            <input type="text" class="form-control" id="transferUpdatedBy" required placeholder="Enter your name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="transferComment" class="form-label">Comment</label>
+                            <input type="text" class="form-control" id="transferComment" maxlength="250" placeholder="Optional note">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="transferStockForm">Transfer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Uniforms Modal -->
+    <div class="modal fade" id="assignedUniformModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignedUniformModalLabel">Assigned Staff</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="assignedUniformModalBody">
+                        <p class="text-muted mb-0">No active assignments for this uniform.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="flash-messages" class="position-fixed top-0 end-0 p-3"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/utils/export.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html> 

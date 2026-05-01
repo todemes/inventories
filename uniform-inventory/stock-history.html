@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock History - Uniform Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <style>
+        .table td {
+            font-size: 14px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Uniform Inventory</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Stock</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="staff.html">Staff Assignments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="staff-directory.html">Staff Directory</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="history.html">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="stock-history.html">Stock History</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 gap-2">
+            <div>
+                <h2 class="mb-0">Stock Update History</h2>
+                <p class="text-muted mb-0">Track all stock adjustments with reasons and responsible staff.</p>
+            </div>
+            <a href="index.html" class="btn btn-stock-action">
+                <i class="bi bi-arrow-left"></i> <span class="btn-text">Back to Stock</span>
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center gap-2 flex-wrap flex-md-nowrap">
+                    <div class="d-flex flex-grow-1 gap-2">
+                        <input type="text" class="form-control flex-grow-1" id="stockHistorySearch" placeholder="Search history...">
+                        <select class="form-select" id="stockHistoryReasonFilter">
+                            <option value="all">Reasons</option>
+                            <option value="Stock take">Stock take</option>
+                            <option value="New order">New order</option>
+                            <option value="New uniform added">New uniform added</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-stock-action" id="exportStockHistoryBtn">
+                        <i class="bi bi-download"></i> <span class="btn-text">Export</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="stockHistoryTable">
+                        <thead>
+                            <tr>
+                            <th role="button" id="historySortDate">Date <i class="bi bi-arrow-down"></i></th>
+                            <th>Updated By</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Color</th>
+                            <th>Location</th>
+                            <th>Change</th>
+                            <th>New Stock</th>
+                            <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockHistoryBody">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">Loading stock update history...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="flash-messages" class="position-fixed top-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const STOCK_HISTORY_API = '/api/uniforms/stock-history';
+        const STOCK_HISTORY_EXPORT_API = '/api/uniforms/stock-history/export';
+        const stockHistoryBody = document.getElementById('stockHistoryBody');
+        const stockHistorySearchInput = document.getElementById('stockHistorySearch');
+        const stockHistoryReasonFilter = document.getElementById('stockHistoryReasonFilter');
+        const historySortDateBtn = document.getElementById('historySortDate');
+        const exportStockHistoryBtn = document.getElementById('exportStockHistoryBtn');
+        const flashContainer = document.getElementById('flash-messages');
+
+        const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        function showFlashMessage(message, type = 'success') {
+            if (!flashContainer) return;
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            flashContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        let stockHistory = [];
+        let stockHistorySort = { column: 'date', direction: 'desc' };
+
+        function formatDateTime(value) {
+            if (!value) return '-';
+            const date = value instanceof Date ? value : new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return '-';
+            }
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = MONTH_LABELS[date.getMonth()] || '';
+            const year = date.getFullYear();
+            return `${day}-${month}-${year}`;
+        }
+
+        function getFilteredStockHistory() {
+            const search = (stockHistorySearchInput?.value || '').trim().toLowerCase();
+            const reason = stockHistoryReasonFilter ? stockHistoryReasonFilter.value : 'all';
+
+            return stockHistory.filter(entry => {
+                const matchesReason = reason === 'all' || (entry.reason || '').toLowerCase() === reason.toLowerCase();
+                if (!matchesReason) return false;
+                if (!search) return true;
+                const haystack = [
+                    entry.date,
+                    entry.updated_by,
+                    entry.uniform_type,
+                    entry.size,
+                    entry.color,
+                    entry.vessel,
+                    entry.storage_location,
+                    entry.reason,
+                    entry.new_quantity,
+                    entry.previous_quantity,
+                    entry.quantity_change
+                ].map(value => (value ?? '').toString().toLowerCase());
+                return haystack.some(value => value.includes(search));
+            });
+        }
+
+        function sortStockHistory(data) {
+            const sorted = [...data];
+            if (stockHistorySort.column === 'date') {
+                sorted.sort((a, b) => {
+                    const aTime = new Date(a.date || 0).getTime();
+                    const bTime = new Date(b.date || 0).getTime();
+                    return stockHistorySort.direction === 'asc' ? aTime - bTime : bTime - aTime;
+                });
+            }
+            return sorted;
+        }
+
+        function renderStockHistory() {
+            if (!stockHistoryBody) return;
+            if (historySortDateBtn) {
+                const icon = historySortDateBtn.querySelector('i');
+                if (icon) {
+                    icon.className = stockHistorySort.direction === 'desc' ? 'bi bi-arrow-down' : 'bi bi-arrow-up';
+                }
+            }
+            const filtered = sortStockHistory(getFilteredStockHistory());
+            if (!filtered.length) {
+                stockHistoryBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">No stock updates recorded yet.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            stockHistoryBody.innerHTML = filtered.map(entry => {
+                const change = Number(entry.quantity_change || 0);
+                const formattedChange = change > 0 ? `+${change}` : `${change}`;
+                const formattedDate = formatDateTime(entry.date);
+                const updatedBy = entry.updated_by || '-';
+                const reason = entry.reason || '-';
+                const location = entry.vessel
+                    ? `${String(entry.vessel).toUpperCase()}${entry.storage_location ? ` - ${entry.storage_location}` : ''}`
+                    : '-';
+                const newQuantity = entry.new_quantity ?? '';
+
+                return `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${updatedBy}</td>
+                        <td>${entry.uniform_type}</td>
+                        <td>${entry.size}</td>
+                        <td>${entry.color}</td>
+                        <td>${location}</td>
+                        <td>${formattedChange}</td>
+                        <td>${newQuantity}</td>
+                        <td>${reason}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function loadStockHistory() {
+            try {
+                const response = await fetch(STOCK_HISTORY_API);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch stock update history');
+                }
+                stockHistory = await response.json();
+                renderStockHistory();
+            } catch (error) {
+                showFlashMessage(error.message, 'danger');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStockHistory();
+
+            if (stockHistorySearchInput) {
+                stockHistorySearchInput.addEventListener('input', renderStockHistory);
+            }
+            if (stockHistoryReasonFilter) {
+                stockHistoryReasonFilter.addEventListener('change', renderStockHistory);
+            }
+            if (historySortDateBtn) {
+                historySortDateBtn.addEventListener('click', () => {
+                    stockHistorySort.direction = stockHistorySort.direction === 'desc' ? 'asc' : 'desc';
+                    renderStockHistory();
+                });
+            }
+            if (exportStockHistoryBtn) {
+                exportStockHistoryBtn.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch(STOCK_HISTORY_EXPORT_API);
+                        if (!response.ok) {
+                            throw new Error('Failed to export stock history');
+                        }
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = typeof getCsvFilename === 'function'
+                            ? getCsvFilename('stock_update_history')
+                            : `stock_update_history_${new Date().toISOString().split('T')[0]}.csv`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        showFlashMessage('Stock update history exported successfully');
+                    } catch (error) {
+                        showFlashMessage(error.message, 'danger');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
