@@ -39,11 +39,11 @@ jobs:
             REPO_PATH="${{ secrets.APP_PATH || '/home/invento/inventories/repo' }}"
             LIVE_PATH="${{ secrets.LIVE_PATH || '/home/invento/inventories/app' }}"
 
-            if [ ! -d "$REPO_PATH/.git" ]; then
+            if ! sudo test -d "$REPO_PATH/.git"; then
               echo "::error::Git clone missing at $REPO_PATH — see DEPLOYMENT.md one-time setup."
               exit 1
             fi
-            if [ ! -d "$LIVE_PATH" ]; then
+            if ! sudo test -d "$LIVE_PATH"; then
               echo "::error::Live Docker mount missing at $LIVE_PATH"
               exit 1
             fi
