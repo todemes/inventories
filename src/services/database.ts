@@ -50,14 +50,15 @@ export async function initializeDatabase(): Promise<void> {
           updated_at TEXT NOT NULL,
           FOREIGN KEY (uniform_id) REFERENCES uniforms(id) ON DELETE CASCADE
         )`);
-        await dbRun(`CREATE UNIQUE INDEX IF NOT EXISTS idx_stock_locations_unique
-          ON stock_locations(uniform_id, vessel, lower(trim(storage_location)))`);
 
         // Legacy DBs may have an older stock_locations table without these columns.
         await ensureColumn('stock_locations', 'vessel', "TEXT DEFAULT 'yin'");
         await ensureColumn('stock_locations', 'storage_location', "TEXT DEFAULT 'Unspecified'");
         await ensureColumn('stock_locations', 'quantity', 'INTEGER DEFAULT 0');
         await ensureColumn('stock_locations', 'updated_at', 'TEXT');
+
+        await dbRun(`CREATE UNIQUE INDEX IF NOT EXISTS idx_stock_locations_unique
+          ON stock_locations(uniform_id, vessel, lower(trim(storage_location)))`);
 
         await ensureColumn('stock_history', 'previous_quantity', 'INTEGER');
         await ensureColumn('stock_history', 'new_quantity', 'INTEGER');
