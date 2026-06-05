@@ -1,253 +1,137 @@
-# Deployment Guide - Uniform Inventory App
+# Deployment Guide — Uniform Inventories (Bluhost / Docker)
 
-This project can be deployed with the same general pattern as Supply-List: GitHub stores the code, the production server keeps the live `.env` and SQLite database, and GitHub Actions SSHes into the server after each push to `main`.
+Same workflow as **Supply List**: you commit and push to `main` on GitHub; GitHub Actions SSHes to the server, updates the code, builds, and restarts the app.
 
-## Architecture
+## Production architecture (vp691.bluhost.pl)
 
-- Nginx handles HTTPS and proxies requests to Node.js.
-- One Node.js/Express process serves both the API and the static frontend from `uniform-inventory/`.
-- PM2 keeps the Node process running.
-- SQLite data lives on the production server at `./database/uniform_inventory.db` and is not committed to GitHub.
+| Item | Value |
+| --- | --- |
+| **Public URL** | https://inventories.scubaspa.com (HTTP basic auth via HAProxy) |
+| **SSH** | `supply@vp691.bluhost.pl` (same user as Supply; use your existing deploy key) |
+| **App process** | Docker container `inventories` → host port **3000** |
+| **Git clone (build)** | `/home/invento/inventories/repo` |
+| **Live directory (Docker volume)** | `/home/invento/inventories/app` |
+| **Docker config** | `/root/docker/local/inventories/` (`start.sh`, `.env`) |
+| **SQLite (live data)** | `uniform_inventory.db` in the deploy directory (mounted as `/opt/app/uniform_inventory.db`) |
+| **GitHub repo** | https://github.com/todemes/inventories |
 
-Recommended internal app port: `3003`.
+The Node app serves API + static files from `uniform-inventory/`. Runtime env (`PORT`, `DB_PATH`) is set by Docker (`/root/docker/local/inventories/.env`), not only by the repo `.env` file.
 
-## Server Requirements
-
-- 1-2 CPU cores, 2 GB RAM, 10 GB disk
-- Node.js v20 LTS or v22 LTS
-- npm, Git, Nginx, PM2, SQLite3
-- Inbound ports 80/443 and 22
-- Outbound access to `github.com` and `registry.npmjs.org`
-
-Ubuntu/Debian packages:
+## Day-to-day deploy (developers)
 
 ```bash
-sudo apt update
-sudo apt install -y nginx git sqlite3
-sudo npm install -g pm2
+git add -A
+git status   # ensure .env and *.db are not staged
+git commit -m "Describe your change"
+git push origin main
 ```
 
-## One-Time Server Setup
+Then open **GitHub → Actions** and confirm **Deploy to Production Server** is green (about 1–2 minutes).
 
-### 1. Clone the repository
+Manual run without a new commit: **Actions → Deploy to Production Server → Run workflow**.
 
-```bash
-sudo mkdir -p /var/www
-cd /var/www
-sudo git clone https://github.com/todemes/inventories.git inventories
-sudo chown -R $USER:$USER inventories
-cd inventories
-```
+## GitHub Actions secrets
 
-### 2. Install and build
+Configure on **this** repository (`todemes/inventories`), not only on Supply:
 
-```bash
-npm install
-npm run build
-```
-
-### 3. Create the production `.env` file
-
-Create this file on the server only:
-
-```bash
-nano /var/www/inventories/.env
-```
-
-Example:
-
-```env
-NODE_ENV=production
-PORT=3003
-DB_PATH=./database/uniform_inventory.db
-CORS_ORIGIN=https://inventory.yourcompany.com
-```
-
-Replace `inventory.yourcompany.com` with the real production domain.
-
-### 4. Create the database directory
-
-```bash
-cd /var/www/inventories
-mkdir -p database
-chmod 700 database
-```
-
-The app creates and migrates tables automatically on startup.
-
-### 5. Start with PM2
-
-```bash
-cd /var/www/inventories
-pm2 start ecosystem.config.js
-pm2 save
-pm2 startup
-```
-
-Useful commands:
-
-```bash
-pm2 status
-pm2 logs uniform-inventory
-pm2 restart uniform-inventory
-```
-
-### 6. Configure Nginx
-
-Create `/etc/nginx/sites-available/uniform-inventory`:
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name inventory.yourcompany.com;
-
-    ssl_certificate     /path/to/ssl/cert.pem;
-    ssl_certificate_key /path/to/ssl/key.pem;
-
-    location / {
-        proxy_pass http://127.0.0.1:3003;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-server {
-    listen 80;
-    server_name inventory.yourcompany.com;
-    return 301 https://$host$request_uri;
-}
-```
-
-Enable it:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/uniform-inventory /etc/nginx/sites-enabled/
-sudo nginx -t
-sudo systemctl restart nginx
-```
-
-For Let's Encrypt:
-
-```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d inventory.yourcompany.com
-```
-
-## Automatic Deployment from GitHub
-
-The repository includes `.github/workflows/deploy.yml`. On every push to `main`, GitHub Actions SSHes into the production server, pulls the latest code, runs `npm install`, runs `npm run build`, ensures `database/` exists, and restarts PM2.
-
-### IT one-time setup
-
-1. Create an SSH key for GitHub Actions to access the server:
-
-```bash
-ssh-keygen -t ed25519 -C "github-deploy-inventories" -f ~/.ssh/github_deploy_inventories -N ""
-cat ~/.ssh/github_deploy_inventories.pub >> ~/.ssh/authorized_keys
-chmod 700 ~/.ssh
-chmod 600 ~/.ssh/authorized_keys
-```
-
-2. If the repository is private, create a read-only deploy key for server-side `git pull`:
-
-```bash
-ssh-keygen -t ed25519 -C "server-repo-pull-inventories" -f ~/.ssh/github_repo_pull_inventories -N ""
-cat ~/.ssh/github_repo_pull_inventories.pub
-```
-
-Add that public key in GitHub: repository Settings -> Deploy keys -> Add deploy key. Do not enable write access.
-
-Configure the server to use it:
-
-```bash
-cat >> ~/.ssh/config <<'EOF'
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/github_repo_pull_inventories
-  IdentitiesOnly yes
-EOF
-chmod 600 ~/.ssh/config
-
-cd /var/www/inventories
-git remote set-url origin git@github.com:todemes/inventories.git
-git ls-remote origin
-```
-
-3. Add GitHub Actions secrets in `todemes/inventories`:
+https://github.com/todemes/inventories/settings/secrets/actions
 
 | Secret | Value |
 | --- | --- |
-| `SERVER_HOST` | Server IP or hostname |
-| `SERVER_USER` | SSH deployment username |
-| `SERVER_SSH_KEY` | Private key contents from `~/.ssh/github_deploy_inventories` |
+| `SERVER_HOST` | `vp691.bluhost.pl` |
+| `SERVER_USER` | `supply` |
+| `SERVER_SSH_KEY` | Full **private** SSH key (same as Supply if deploy works there) |
 
 Optional:
 
 | Secret | Value |
 | --- | --- |
-| `APP_PATH` | App path if not `/var/www/inventories` |
+| `APP_PATH` | Git clone path if not `/home/invento/inventories/repo` |
+| `LIVE_PATH` | Docker mount path if not `/home/invento/inventories/app` |
 
-## Database and Backups
+Secrets are **per repository**. Reuse the same host, user, and key as Supply; only the deploy path and restart command differ.
 
-Production database path:
+## One-time server setup
 
-```text
-/var/www/inventories/database/uniform_inventory.db
-```
-
-This is live app data, not source code. It changes whenever users update inventory, staff, assignments, returns, locations, or history. Do not push it to GitHub.
-
-Recommended backup:
-
-```cron
-0 3 * * * sqlite3 /var/www/inventories/database/uniform_inventory.db ".backup /backups/inventories/uniform_inventory_$(date +\%Y\%m\%d).db"
-```
-
-## Verification
-
-After deployment:
+Run once from your Mac (key `~/.ssh/supply_server_key`):
 
 ```bash
-pm2 status
-pm2 logs uniform-inventory --lines 50
-curl -f https://inventory.yourcompany.com/api/health
+SSH="ssh -i ~/.ssh/supply_server_key supply@vp691.bluhost.pl"
+REPO_PATH="/home/invento/inventories/repo"
+APP_LEGACY="/home/invento/inventories/app"
+
+# 1. Backups
+$SSH 'sudo cp "$APP_LEGACY/.env" /home/invento/inventories/app.env.backup 2>/dev/null || true
+$SSH 'sudo cp "$APP_LEGACY/uniform_inventory.db" /home/invento/inventories/uniform_inventory.db.backup'
+
+# 2. Git clone (user invento)
+$SSH "sudo -u invento git clone https://github.com/todemes/inventories.git $REPO_PATH"
+
+# 3. Copy live data (not in GitHub)
+$SSH "sudo cp /home/invento/inventories/uniform_inventory.db.backup $REPO_PATH/uniform_inventory.db"
+$SSH "sudo cp /home/invento/inventories/app.env.backup $REPO_PATH/.env 2>/dev/null || true"
+$SSH "sudo chown invento:invento $REPO_PATH/uniform_inventory.db $REPO_PATH/.env 2>/dev/null || true"
+
+# 4. First build on server
+$SSH "sudo -u invento bash -lc 'cd $REPO_PATH && npm install && npm run build'"
+
+# 5. Verify Docker still mounts app/ (do not switch to repo/ — DB lives in app/)
+$SSH 'sudo grep inventories/app /root/docker/local/inventories/start.sh'
+
+# 6. Verify site loads (container should already be running)
+$SSH 'sudo docker ps --filter name=inventories'
 ```
 
-Also open `https://inventory.yourcompany.com` in a browser and confirm stock and staff pages load.
+Keep Docker volume on **`app/`**. Each deploy syncs `dist/` and `uniform-inventory/` from `repo/` into `app/`.
+
+## What the workflow does on each push
+
+1. SSH as `supply`
+2. `git fetch` + `git reset --hard origin/main` in `repo/` as `invento`
+3. `npm install` + `npm run build` in `repo/`
+4. `rsync` `dist/` and `uniform-inventory/` into `app/` (live Docker mount)
+5. `docker restart inventories`
+
+It does **not** delete or replace `uniform_inventory.db` in `app/`.
+
+## Database and backups
+
+- **Do not commit** `uniform_inventory.db` or production `.env` to GitHub.
+- Live file on server: `/home/invento/inventories/repo/uniform_inventory.db`
+
+Example nightly backup (on server):
+
+```cron
+0 3 * * * sqlite3 /home/invento/inventories/repo/uniform_inventory.db ".backup /home/invento/inventories/backups/uniform_inventory_$(date +\%Y\%m\%d).db"
+```
 
 ## Rollback
 
 ```bash
-cd /var/www/inventories
-git fetch origin
-git log --oneline -n 10
-git checkout <known_good_commit_sha>
-npm install --production=false
-npm run build
-pm2 restart uniform-inventory
-```
-
-Return to normal:
-
-```bash
-git checkout main
-git pull origin main
-npm install --production=false
-npm run build
-pm2 restart uniform-inventory
+ssh -i ~/.ssh/supply_server_key supply@vp691.bluhost.pl
+sudo -u invento bash -lc 'cd /home/invento/inventories/repo && git fetch origin && git log --oneline -n 10'
+# pick a good commit:
+sudo -u invento bash -lc 'cd /home/invento/inventories/repo && git reset --hard <sha> && npm install && npm run build'
+sudo docker restart inventories
 ```
 
 ## Troubleshooting
 
-| Problem | Check |
-| --- | --- |
-| App not loading | `pm2 status`, `pm2 logs uniform-inventory` |
-| 502 Bad Gateway | Confirm Nginx proxies to `127.0.0.1:3003` and PM2 is running |
-| API failing | Check `/api/health` and PM2 logs |
-| Database errors | Check `DB_PATH`, directory permissions, and disk space |
-| GitHub Action fails at SSH | Check `SERVER_HOST`, `SERVER_USER`, `SERVER_SSH_KEY` |
-| GitHub Action fails at git pull | Check server deploy key and `git ls-remote origin` |
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `ssh: no key found` | Bad `SERVER_SSH_KEY` secret | Paste full private key PEM on **inventories** repo |
+| `Deploy path is not a git clone` | One-time setup not done | Run [One-time server setup](#one-time-server-setup) |
+| `git fetch` fails | No network or private repo auth | Test: `sudo -u invento git ls-remote https://github.com/todemes/inventories.git` |
+| Health check warning | Container still starting or crash | `sudo docker logs inventories --tail 80` |
+| Site OK but old UI | Browser cache | Hard refresh; check commit on server: `git -C repo log -1` |
+| 502 / HAProxy | Container down | `sudo docker ps`, restart container |
+
+## Local development
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Default local URL: http://localhost:3000

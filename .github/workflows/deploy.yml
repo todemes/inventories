@@ -1,9 +1,15 @@
+# Deploy Uniform Inventories on vp691.bluhost.pl
+# - Git clone + build in /home/invento/inventories/repo
+# - Sync dist/ + uniform-inventory/ into /home/invento/inventories/app (Docker volume)
+# - Keeps production uniform_inventory.db in app/
+
 name: Deploy to Production Server
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -11,6 +17,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Validate deployment secrets
+        run: |
+          missing=""
+          [ -z "${{ secrets.SERVER_HOST }}" ] && missing="${missing} SERVER_HOST"
+          [ -z "${{ secrets.SERVER_USER }}" ] && missing="${missing} SERVER_USER"
+          [ -z "${{ secrets.SERVER_SSH_KEY }}" ] && missing="${missing} SERVER_SSH_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing GitHub Actions secrets:${missing}"
+            exit 1
+          fi
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -19,23 +36,45 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             set -e
+            REPO_PATH="${{ secrets.APP_PATH || '/home/invento/inventories/repo' }}"
+            LIVE_PATH="${{ secrets.LIVE_PATH || '/home/invento/inventories/app' }}"
 
-            cd ${{ secrets.APP_PATH || '/var/www/inventories' }}
+            if [ ! -d "$REPO_PATH/.git" ]; then
+              echo "::error::Git clone missing at $REPO_PATH — see DEPLOYMENT.md one-time setup."
+              exit 1
+            fi
+            if [ ! -d "$LIVE_PATH" ]; then
+              echo "::error::Live Docker mount missing at $LIVE_PATH"
+              exit 1
+            fi
 
-            echo "Pulling latest code..."
-            git pull origin main
+            echo "Building in $REPO_PATH ..."
+            sudo -u invento bash -lc "
+              set -e
+              cd \"$REPO_PATH\"
+              git fetch origin main
+              git reset --hard origin/main
+              npm install --production=false
+              npm run build
+            "
 
-            echo "Installing dependencies..."
-            npm install --production=false
+            echo "Syncing build to $LIVE_PATH (database unchanged) ..."
+            sudo -u invento bash -lc "
+              set -e
+              rsync -a --delete \"$REPO_PATH/dist/\" \"$LIVE_PATH/dist/\"
+              rsync -a --delete \"$REPO_PATH/uniform-inventory/\" \"$LIVE_PATH/uniform-inventory/\"
+              test -f \"$LIVE_PATH/uniform_inventory.db\" || echo 'WARN: uniform_inventory.db missing in live path'
+            "
 
-            echo "Building application..."
-            npm run build
+            echo "Restarting Docker container inventories ..."
+            sudo docker restart inventories
 
-            echo "Ensuring runtime database directory exists..."
-            mkdir -p database
-
-            echo "Restarting application..."
-            pm2 restart uniform-inventory || pm2 start ecosystem.config.js
-            pm2 save
+            sleep 3
+            if sudo docker inspect inventories --format '{{.State.Status}}' | grep -q running; then
+              echo "Container is running."
+            else
+              echo "::error::Container inventories is not running — check: sudo docker logs inventories --tail 50"
+              exit 1
+            fi
 
             echo "Deployment complete!"
