@@ -67,7 +67,6 @@ export async function initializeDatabase(): Promise<void> {
         await ensureColumn('stock_history', 'vessel', 'TEXT');
         await ensureColumn('stock_history', 'storage_location', 'TEXT');
         await backfillStockLocations();
-        await normalizeDefaultStorageLocations();
 
         await ensureColumn('staff', 'full_name', 'TEXT');
         await ensureColumn('staff', 'starting_date', 'TEXT');
@@ -81,6 +80,8 @@ export async function initializeDatabase(): Promise<void> {
         await ensureColumn('staff_assignments', 'vessel', "TEXT DEFAULT 'yin'");
         await ensureColumn('staff_assignments', 'storage_location', "TEXT DEFAULT 'Unspecified'");
         await ensureColumn('staff_assignments', 'notes', 'TEXT');
+
+        await normalizeDefaultStorageLocations();
 
         // Ensure legacy rows have a default assigned condition
         try {
